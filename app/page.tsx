@@ -1,103 +1,111 @@
 "use client";
 
-import { useState, useEffect, FormEvent, useRef } from "react";
+/**
+ * DARK CINEMATIC LUXURY BOOKING SITE - Locs by Nya
+ * 
+ * Single-page, dark-themed booking experience inspired by Hairy demo
+ * Sections: Hero, About, Services, Gallery, Booking, Policies, Contact, Footer
+ * 
+ * COLOR PALETTE:
+ * - Backgrounds: #050609 (main), #0B0F13 (sections/cards)
+ * - Text: #F9FAFB (primary), #9CA3AF (muted)
+ * - Brown accents: #8B5A3C (primary), #4B2B1A (deeper)
+ * - Teal accents: #14B8A6 (secondary highlights)
+ */
+
+import { FormEvent, useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import LocsFaqChatWidget from "@/components/LocsFaqChatWidget";
 
 export default function Home() {
+  const [showPromoBar, setShowPromoBar] = useState(true);
   const [formData, setFormData] = useState({
+    clientType: "",
+    service: "",
+    date: "",
+    timeWindow: "",
     name: "",
     email: "",
     phone: "",
-    clientType: "",
-    service: "",
-    preferredTimes: "",
-    hairNotes: "",
-    depositAgreed: false,
+    notes: "",
   });
-
-  const [animatedText, setAnimatedText] = useState(0);
-  const [isVisible, setIsVisible] = useState(true);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const phrases = ["Strong Roots.", "Clean Parts.", "Healthy Locs."];
-  
-  // Refs for scroll animations
-  const servicesRef = useRef<HTMLElement>(null);
-  const bookingRef = useRef<HTMLElement>(null);
-  const faqRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIsVisible(false);
-      setTimeout(() => {
-        setAnimatedText((prev) => (prev + 1) % phrases.length);
-        setIsVisible(true);
-      }, 200); // Midpoint of transition for smooth crossfade
-    }, 1200); // Change every 1.2 seconds
-
-    return () => clearInterval(interval);
-  }, [phrases.length]);
-
-  // Scroll animations
-  useEffect(() => {
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px',
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('fade-in-visible');
-        }
-      });
-    }, observerOptions);
-
-    const sections = [servicesRef.current, bookingRef.current, faqRef.current].filter(Boolean);
-    sections.forEach((section) => {
-      if (section) {
-        section.classList.add('fade-in');
-        observer.observe(section);
-      }
-    });
-
-    return () => {
-      sections.forEach((section) => {
-        if (section) observer.unobserve(section);
-      });
-    };
-  }, []);
+  const [depositAgreed, setDepositAgreed] = useState(false);
+  const [hairFiles, setHairFiles] = useState<FileList | null>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    const value = e.target.type === "checkbox" ? (e.target as HTMLInputElement).checked : e.target.value;
     setFormData({
       ...formData,
-      [e.target.name]: value,
+      [e.target.name]: e.target.value,
     });
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setHairFiles(e.target.files);
+    }
+  };
+
+  const isNewClient = formData.clientType === "new";
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
-    // TODO: Wire real email backend here (e.g., SendGrid, Resend, or API route)
-    // Show success state
-    setShowSuccess(true);
-    
-    // Reset form after showing success
-    setTimeout(() => {
+    // Validate new client requirements: must upload photos/videos
+    if (isNewClient && !hairFiles) {
+      alert('New clients must upload photos/video of their hair so Nya can see your hair texture and condition.');
+      return;
+    }
+
+    try {
+      // Create FormData to handle file uploads
+      const formDataToSend = new FormData();
+      formDataToSend.append('clientType', formData.clientType);
+      formDataToSend.append('service', formData.service);
+      formDataToSend.append('date', formData.date);
+      formDataToSend.append('timeWindow', formData.timeWindow);
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('phone', formData.phone);
+      formDataToSend.append('notes', formData.notes || '');
+      formDataToSend.append('hasFiles', hairFiles && hairFiles.length > 0 ? 'true' : 'false');
+
+      // Append all files
+      if (hairFiles) {
+        for (let i = 0; i < hairFiles.length; i++) {
+          formDataToSend.append('hairFiles', hairFiles[i]);
+        }
+      }
+
+      const response = await fetch('/api/book', {
+        method: 'POST',
+        body: formDataToSend,
+      });
+
+      if (response.ok) {
+        alert('Appointment confirmed! You will receive a confirmation email shortly.');
+        // Reset form
       setFormData({
+          clientType: "",
+          service: "",
+          date: "",
+          timeWindow: "",
         name: "",
         email: "",
         phone: "",
-        clientType: "",
-        service: "",
-        preferredTimes: "",
-        hairNotes: "",
-        depositAgreed: false,
-      });
-      setShowSuccess(false);
-    }, 5000);
+          notes: "",
+        });
+        setDepositAgreed(false);
+        setHairFiles(null);
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.message || 'Failed to confirm appointment'}`);
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('An error occurred. Please try again or contact us directly.');
+    }
   };
 
   const scrollToSection = (id: string) => {
@@ -107,394 +115,1036 @@ export default function Home() {
     }
   };
 
-  const currentYear = new Date().getFullYear();
+  // Scroll reveal hook
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px',
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+        }
+      });
+    }, observerOptions);
+
+    const elements = document.querySelectorAll('.reveal-on-scroll');
+    elements.forEach((el) => observer.observe(el));
+
+    return () => {
+      elements.forEach((el) => observer.unobserve(el));
+    };
+  }, []);
+
+  useEffect(() => {
+    // Set current year in footer
+    const yearElement = document.getElementById("year");
+    if (yearElement) {
+      yearElement.textContent = new Date().getFullYear().toString();
+    }
+  }, []);
 
   return (
-    <main 
-      className="min-h-screen relative"
-      style={{
-        background: 'linear-gradient(135deg, #1a1816 0%, #2a2520 50%, #1a1816 100%)',
-      }}
-    >
-      {/* Subtle texture overlay for dark background */}
-      <div 
-        className="fixed inset-0 pointer-events-none z-0"
-        style={{
-          backgroundImage: `
-            radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.02) 1px, transparent 0)
-          `,
-          backgroundSize: '40px 40px',
-          opacity: 0.3,
-        }}
-      />
-      <div className="max-w-5xl mx-auto px-4 py-10 relative z-10">
-        {/* HERO SECTION */}
-        <section id="hero" className="mb-20 md:mb-32">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
-            {/* Left: Text Content */}
-            <div className="space-y-7">
-              <p className="text-xs md:text-sm font-medium text-[#c0a996] uppercase tracking-[0.15em] letter-spacing-wider">
-                Los Angeles | Loctician
-              </p>
-              <h1 
-                className="text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight relative"
-                style={{ 
-                  fontFamily: "var(--font-playfair), serif",
-                  color: '#f5f4f4',
-                  textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
-                  display: 'inline-block',
-                }}
-              >
-                {/* Continuous sophisticated premium shimmer effect with caramel palette - Layer 1 */}
-                <span
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background: 'linear-gradient(110deg, transparent 0%, transparent 10%, rgba(169, 133, 108, 0.5) 38%, rgba(192, 169, 150, 0.6) 42%, rgba(255, 255, 255, 0.55) 50%, rgba(192, 169, 150, 0.6) 58%, rgba(169, 133, 108, 0.5) 62%, rgba(131, 99, 80, 0.4) 70%, transparent 90%, transparent 100%)',
-                    backgroundSize: '200% 100%',
-                    animation: 'shimmer 12s linear infinite',
-                    mixBlendMode: 'screen',
-                    zIndex: 1,
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                  }}
+    <main className="min-h-screen bg-[#050609] text-[#F9FAFB] relative">
+      {/* Global Pattern Overlay - Subtle dark pattern */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div 
+          className="absolute inset-0 bg-[url('/images/locs-pattern-bw.png')] bg-[length:110px_110px] bg-center opacity-[0.03] mix-blend-overlay"
+        ></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-[#050609]/98 via-[#050609] to-[#0B0F13]/98"></div>
+      </div>
+      {/* PROMO ANNOUNCEMENT BAR */}
+      {showPromoBar && (
+        <div className="bg-[#4B2B1A] text-[#F9FAFB] py-2 px-4 relative z-40">
+          <div className="max-w-7xl mx-auto flex items-center justify-center text-sm text-center">
+            <span>
+              Promo: Get $10 off your next service when you leave a review on{" "}
+              <a href="https://YOUR-YELP-PAGE-LINK" className="underline text-[#14B8A6] hover:text-[#14B8A6]/80 transition-colors">
+                Yelp Reviews
+              </a>
+              {" "}after your appointment.
+            </span>
+            <button
+              onClick={() => setShowPromoBar(false)}
+              className="absolute right-4 text-[#F9FAFB] hover:text-[#9CA3AF] transition-colors text-xl leading-none"
+              aria-label="Dismiss"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* STICKY HEADER */}
+      <header className="sticky top-0 z-50 bg-[#050609]/80 backdrop-blur-md border-b border-[#0B0F13] relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo Block */}
+            <div className="flex items-center gap-3">
+              {/* Logo */}
+              <div className="relative w-16 h-16 flex items-center justify-center">
+                <Image
+                  src="/images/locs-logo.png"
+                  alt="Locs by Nya Logo"
+                  width={64}
+                  height={64}
+                  className="object-contain brightness-110"
+                  priority
                 />
-                {/* Layer 2 - Subtle depth with caramel tones */}
-                <span
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background: 'linear-gradient(110deg, transparent 0%, transparent 12%, rgba(169, 133, 108, 0.35) 40%, rgba(245, 244, 244, 0.4) 50%, rgba(169, 133, 108, 0.35) 60%, transparent 88%, transparent 100%)',
-                    backgroundSize: '200% 100%',
-                    animation: 'shimmer 12s linear infinite 0.5s',
-                    mixBlendMode: 'soft-light',
-                    zIndex: 2,
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                  }}
-                />
-                <span
-                  key={animatedText}
-                  className="relative inline-block z-10"
-                  style={{ 
-                    opacity: isVisible ? 1 : 0,
-                    minWidth: 'max-content',
-                    transition: 'opacity 800ms cubic-bezier(0.4, 0, 0.2, 1)',
-                  }}
-                >
-                  {phrases[animatedText]}
+              </div>
+              <div className="flex flex-col">
+                <span className="font-sans text-[#F9FAFB] font-semibold text-lg leading-tight">
+                  Locs by Nya
                 </span>
-              </h1>
-              <p className="text-lg md:text-xl text-[#d4c4b0] leading-[1.7] font-normal">
-                Book your next session with confidence.
-              </p>
-              <ul className="space-y-3.5 text-[#d4c4b0] text-base leading-relaxed">
-                <li className="flex items-start gap-3">
-                  <span className="text-[#a9856c] mt-0.5 text-lg">✔</span>
-                  <span className="leading-[1.6]">Private, one-on-one appointments</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-[#a9856c] mt-0.5 text-lg">✔</span>
-                  <span className="leading-[1.6]">Focus on scalp health and longevity</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-[#a9856c] mt-0.5 text-lg">✔</span>
-                  <span className="leading-[1.6]">Simple booking with upfront pricing</span>
-                </li>
-              </ul>
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                <span className="font-sans text-[#9CA3AF] text-xs leading-tight">
+                  RVM Twists and Cuts
+                </span>
+              </div>
+            </div>
+
+            {/* Main Nav */}
+            <nav className="hidden md:flex items-center gap-8">
                 <button
-                  onClick={() => scrollToSection("booking")}
-                  className="bg-[#a9856c] hover:bg-[#836350] text-white font-semibold px-8 py-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl hover:shadow-[#a9856c]/30 hover:scale-[1.03] transform"
+                onClick={() => scrollToSection("home")}
+                className="font-sans text-[#F9FAFB] text-sm font-medium hover:text-[#8B5A3C] transition-colors relative group"
                 >
-                  Book Your Appointment
+                Home
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#14B8A6] transition-all group-hover:w-full"></span>
                 </button>
                 <button
                   onClick={() => scrollToSection("services")}
-                  className="text-[#c0a996] hover:text-[#a9856c] font-medium px-8 py-4 rounded-lg transition-colors duration-200 underline decoration-2 underline-offset-4"
-                >
-                  View services & pricing
+                className="font-sans text-[#F9FAFB] text-sm font-medium hover:text-[#8B5A3C] transition-colors relative group"
+              >
+                Services
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#14B8A6] transition-all group-hover:w-full"></span>
+              </button>
+              <button
+                onClick={() => scrollToSection("gallery")}
+                className="font-sans text-[#F9FAFB] text-sm font-medium hover:text-[#8B5A3C] transition-colors relative group"
+              >
+                Gallery
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#14B8A6] transition-all group-hover:w-full"></span>
+              </button>
+              <button
+                onClick={() => scrollToSection("book")}
+                className="font-sans text-[#8B5A3C] text-sm font-semibold hover:text-[#8B5A3C]/80 transition-colors relative border-b-2 border-[#8B5A3C] pb-1"
+              >
+                Book
+              </button>
+              <button
+                onClick={() => scrollToSection("policies")}
+                className="font-sans text-[#F9FAFB] text-sm font-medium hover:text-[#8B5A3C] transition-colors relative group"
+              >
+                Policies
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#14B8A6] transition-all group-hover:w-full"></span>
+              </button>
+              <button
+                onClick={() => scrollToSection("contact")}
+                className="font-sans text-[#F9FAFB] text-sm font-medium hover:text-[#8B5A3C] transition-colors relative group"
+              >
+                Contact
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#14B8A6] transition-all group-hover:w-full"></span>
+              </button>
+            </nav>
+
+            {/* Mobile Menu Button */}
+            <button className="md:hidden text-[#F9FAFB]">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
                 </button>
               </div>
             </div>
+      </header>
 
-            {/* Right: Hero Image */}
-            <div className="relative" style={{ perspective: '1000px' }}>
-              <div 
-                className="rounded-2xl overflow-hidden transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2"
-                style={{
-                  transform: 'perspective(1000px) rotateY(-2deg) rotateX(2deg)',
-                  boxShadow: `
-                    0 25px 50px -12px rgba(45, 39, 39, 0.25),
-                    0 15px 30px -8px rgba(45, 39, 39, 0.15),
-                    0 8px 16px -4px rgba(45, 39, 39, 0.1),
-                    inset 0 1px 0 rgba(255, 255, 255, 0.1)
-                  `,
-                  border: '1px solid transparent',
-                  background: 'linear-gradient(135deg, rgba(169, 133, 108, 0.1), rgba(192, 169, 150, 0.05)) padding-box, linear-gradient(135deg, rgba(169, 133, 108, 0.3), rgba(192, 169, 150, 0.2)) border-box',
-                }}
-              >
-                <div 
-                  className="relative"
-                  style={{
-                    boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.06)',
-                  }}
-                >
+      {/* HERO SECTION - Full Screen Banner */}
+      <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Hero Background Image */}
+        <div className="absolute inset-0 z-0">
                   <Image
-                    src="/hero-image.png"
-                    alt="Locs by Nya"
-                    width={600}
-                    height={450}
-                    className="w-full h-auto object-cover relative z-10"
+            src="/images/hero-locs.png"
+            alt="Luxury locs by Nya - precise parts and impeccable styling"
+            fill
                     priority
-                  />
-                  {/* Subtle gradient overlay for depth */}
-                  <div 
-                    className="absolute inset-0 pointer-events-none z-20"
+            className="object-cover object-center"
+            quality={90}
+            sizes="100vw"
+          />
+        </div>
+        
+        {/* Dark Gradient Overlay for Text Readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#050609]/85 via-[#050609]/70 to-[#050609]/90 z-10"></div>
+        
+        {/* Subtle Pattern Overlay */}
+        <div 
+          className="absolute inset-0 z-[11] opacity-[0.03] mix-blend-overlay"
                     style={{
-                      background: 'linear-gradient(135deg, rgba(169, 133, 108, 0.03) 0%, transparent 50%, rgba(45, 39, 39, 0.02) 100%)',
-                    }}
-                  />
+            backgroundImage: "url('/images/locs-pattern-bw.png')",
+            backgroundSize: '110px 110px',
+            backgroundPosition: 'center',
+          }}
+        ></div>
+        
+        {/* Hero Content */}
+        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-20">
+          <div className="max-w-3xl">
+            {/* Eyebrow */}
+            <p className="text-[11px] uppercase tracking-[0.35em] text-[#9CA3AF] font-sans font-medium opacity-0 animate-hero-fade-delay-1 mb-4">
+              Los Angeles · RVM Twists and Cuts
+            </p>
+            
+            {/* H1 */}
+            <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-semibold text-[#F9FAFB] leading-tight tracking-tight mb-6 opacity-0 animate-hero-fade-delay-2">
+              Impeccable locs and precise parts at every visit.
+            </h1>
+            
+            {/* Subtext paragraph */}
+            <p className="font-sans text-base md:text-lg text-[#9CA3AF] leading-relaxed max-w-2xl mb-6 opacity-0 animate-hero-fade-delay-3">
+              Starter locs, retwists, and long-term maintenance focused on clean parts, healthy tension, and a scalp that can breathe.
+            </p>
+            
+            {/* Byline */}
+            <p className="text-[11px] uppercase tracking-[0.25em] text-[#9CA3AF] font-sans font-medium mb-4 opacity-0 animate-hero-fade-delay-4">
+              By Nya · Loctician & Loc Care Specialist · By appointment only
+            </p>
+            
+            {/* Promise Pills */}
+            <div className="flex flex-wrap gap-2 mb-6 opacity-0 animate-hero-fade-delay-4">
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full border border-[#8B5A3C]/40 bg-[#0B0F13]/50 text-xs font-sans text-[#F9FAFB] tracking-wide">
+                Healthy tension only
+              </span>
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full border border-[#8B5A3C]/40 bg-[#0B0F13]/50 text-xs font-sans text-[#F9FAFB] tracking-wide">
+                Clean, consistent parts
+              </span>
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full border border-[#8B5A3C]/40 bg-[#0B0F13]/50 text-xs font-sans text-[#F9FAFB] tracking-wide">
+                Respect for your time
+              </span>
+            </div>
+            
+            {/* Button + Microcopy */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 opacity-0 animate-hero-fade-delay-5">
+              <button
+                onClick={() => scrollToSection("book")}
+                className="bg-gradient-to-r from-[#4B2B1A] to-[#8B5A3C] text-white rounded-full px-8 py-4 text-sm font-medium font-sans hover:shadow-lg hover:shadow-[#8B5A3C]/30 transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#8B5A3C] focus:ring-offset-2 focus:ring-offset-transparent"
+              >
+                Book Your Appointment
+              </button>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-[#9CA3AF] font-sans">
+                Limited availability · Early booking recommended
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Micro Image Card - Overlay on Banner */}
+        <div className="absolute bottom-10 right-8 z-20 hidden md:block opacity-0 animate-hero-fade-delay-5">
+          <div className="relative w-56 aspect-[3/4] rounded-3xl overflow-hidden ring-1 ring-slate-700/60 shadow-xl shadow-black/40">
+            <Image
+              src="/images/hero-locs.png"
+              alt="Close-up of precise loc parts"
+              fill
+              className="object-cover object-top"
+              quality={90}
+              sizes="(max-width: 768px) 0vw, 224px"
+            />
+            {/* Teal accent line at top */}
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#14B8A6] to-transparent"></div>
+            {/* Brown accent border effect */}
+            <div className="absolute inset-0 border-2 border-[#8B5A3C]/30 pointer-events-none"></div>
                 </div>
               </div>
-              {/* Decorative glow behind */}
-              <div 
-                className="absolute -inset-4 rounded-3xl -z-10 blur-2xl opacity-30"
-                style={{
-                  background: 'radial-gradient(circle, rgba(169, 133, 108, 0.4) 0%, transparent 70%)',
-                  transform: 'perspective(1000px) rotateY(-2deg) rotateX(2deg)',
-                }}
-              />
+
+        {/* Mobile: Micro Image Card - Below Text */}
+        <div className="relative z-20 md:hidden mt-8 mx-auto opacity-0 animate-hero-fade-delay-5">
+          <div className="relative w-40 aspect-[3/4] rounded-3xl overflow-hidden ring-1 ring-slate-700/60 shadow-xl shadow-black/40">
+            <Image
+              src="/images/hero-locs.png"
+              alt="Close-up of precise loc parts"
+              fill
+              className="object-cover object-top"
+              quality={90}
+              sizes="160px"
+            />
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#14B8A6] to-transparent"></div>
+            <div className="absolute inset-0 border-2 border-[#8B5A3C]/30 pointer-events-none"></div>
+          </div>
+        </div>
+
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20">
+          <div className="animate-bounce-slow">
+          <button
+            onClick={() => scrollToSection("services")}
+            className="flex flex-col items-center gap-2 text-[#9CA3AF] hover:text-[#F9FAFB] transition-colors group"
+            aria-label="Scroll down"
+          >
+            <span className="text-[10px] uppercase tracking-[0.2em] font-sans">Scroll</span>
+            <svg 
+              className="w-5 h-5 group-hover:translate-y-1 transition-transform" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+          </button>
             </div>
           </div>
         </section>
 
-        {/* Section Divider */}
-        <div className="my-20 md:my-32">
-          <div className="h-px bg-gradient-to-r from-transparent via-[#3d3630] to-transparent"></div>
+      {/* ABOUT / INTRO SECTION */}
+      <section className="py-16 md:py-24 bg-[#0B0F13] relative">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+          <p className="font-sans text-lg md:text-xl text-[#9CA3AF] leading-relaxed max-w-3xl mx-auto reveal-on-scroll">
+            Comprehensive loc care for every stage of your journey. Expert guidance and meticulous attention to detail ensure your locs thrive from day one through long-term maintenance.
+          </p>
         </div>
+      </section>
 
         {/* SERVICES SECTION */}
-        <section id="services" ref={servicesRef} className="mb-20 md:mb-32">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-bold text-[#f5f4f4] mb-5 leading-tight tracking-tight">
-              Signature Loc Services
+      <section id="services" className="py-20 md:py-32 bg-[#050609] relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <header className="text-center mb-16 reveal-on-scroll">
+            <h2 className="font-serif text-4xl md:text-5xl font-bold text-[#F9FAFB] mb-4">
+              Services & Pricing
             </h2>
-            <p className="text-lg text-[#d4c4b0] max-w-2xl mx-auto leading-[1.7]">
-              Clear options, clear pricing. Choose what fits your loc journey.
+            <p className="font-sans text-lg text-[#9CA3AF] max-w-3xl mx-auto leading-relaxed">
+              My work is centered on scalp health, clean parting, and styles that mature beautifully over time. All services include a wash, blow dry, and style unless otherwise noted.
             </p>
-          </div>
+          </header>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            {/* Service Card 1 */}
-            <div className="bg-[#2a2520] rounded-xl shadow-lg hover:shadow-xl hover:shadow-[#a9856c]/20 hover:-translate-y-1 transition-all duration-300 p-8 border border-[#3d3630] hover:border-[#a9856c]/30 group">
-              <div className="mb-5">
-                <span className="inline-block bg-[#3d3630] text-[#c0a996] text-xs font-semibold px-3 py-1.5 rounded-full tracking-wide">
-                  New clients welcome
-                </span>
-              </div>
-              <h3 className="text-2xl font-bold text-[#f5f4f4] mb-4 leading-tight tracking-tight">
-                Starter Locs
-              </h3>
-              <p className="text-[#d4c4b0] mb-5 leading-[1.7] text-base">
-                Consultation-based install to match your hair, lifestyle, and goals.
-              </p>
-              <p className="text-lg font-semibold text-[#a9856c] tracking-wide">
-                From $XXX
-              </p>
-            </div>
-
-            {/* Service Card 2 */}
-            <div className="bg-[#2a2520] rounded-xl shadow-lg hover:shadow-xl hover:shadow-[#a9856c]/20 hover:-translate-y-1 transition-all duration-300 p-8 border border-[#3d3630] hover:border-[#a9856c]/30 group">
-              <div className="mb-5">
-                <span className="inline-block bg-[#3d3630] text-[#c0a996] text-xs font-semibold px-3 py-1.5 rounded-full tracking-wide">
-                  Existing locs
-                </span>
-              </div>
-              <h3 className="text-2xl font-bold text-[#f5f4f4] mb-4 leading-tight tracking-tight">
-                Loc Retwist & Maintenance
-              </h3>
-              <p className="text-[#d4c4b0] mb-5 leading-[1.7] text-base">
-                Clean parts, healthy tension, and scalp care for existing locs.
-              </p>
-              <p className="text-lg font-semibold text-[#a9856c] tracking-wide">
-                From $XXX
-              </p>
-            </div>
-
-            {/* Service Card 3 */}
-            <div className="bg-[#2a2520] rounded-xl shadow-lg hover:shadow-xl hover:shadow-[#a9856c]/20 hover:-translate-y-1 transition-all duration-300 p-8 border border-[#3d3630] hover:border-[#a9856c]/30 group">
-              <div className="mb-5">
-                <span className="inline-block bg-[#3d3630] text-[#c0a996] text-xs font-semibold px-3 py-1.5 rounded-full tracking-wide">
-                  Repair & restoration
-                </span>
-              </div>
-              <h3 className="text-2xl font-bold text-[#f5f4f4] mb-4 leading-tight tracking-tight">
-                Loc Repair & Reconstruction
-              </h3>
-              <p className="text-[#d4c4b0] mb-5 leading-[1.7] text-base">
-                Strengthening weak spots, repairing breakage, and restoring structure.
-              </p>
-              <p className="text-lg font-semibold text-[#a9856c] tracking-wide">
-                From $XXX
-              </p>
-            </div>
-
-            {/* Service Card 4 */}
-            <div className="bg-[#2a2520] rounded-xl shadow-lg hover:shadow-xl hover:shadow-[#a9856c]/20 hover:-translate-y-1 transition-all duration-300 p-8 border border-[#3d3630] hover:border-[#a9856c]/30 group">
-              <div className="mb-5">
-                <span className="inline-block bg-[#3d3630] text-[#c0a996] text-xs font-semibold px-3 py-1.5 rounded-full tracking-wide">
-                  Styling
-                </span>
-              </div>
-              <h3 className="text-2xl font-bold text-[#f5f4f4] mb-4 leading-tight tracking-tight">
-                Styles & Add-Ons
-              </h3>
-              <p className="text-[#d4c4b0] mb-5 leading-[1.7] text-base">
-                Barrel twists, rope twists, updos, and finishing touches.
-              </p>
-              <p className="text-lg font-semibold text-[#a9856c] tracking-wide">
-                From $XXX
-              </p>
-            </div>
-          </div>
-
-          <p className="text-center text-sm text-[#c0a996] italic leading-relaxed">
-            Full service descriptions will be confirmed during your consultation.
-          </p>
-        </section>
-
-        {/* Section Divider */}
-        <div className="my-20 md:my-32">
-          <div className="h-px bg-gradient-to-r from-transparent via-[#3d3630] to-transparent"></div>
-        </div>
-
-        {/* TESTIMONIALS SECTION */}
-        <section className="mb-20 md:mb-32">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-[#f5f4f4] mb-5 leading-tight tracking-tight">
-              What Clients Say
-            </h2>
-            <p className="text-lg text-[#d4c4b0] max-w-2xl mx-auto leading-[1.7]">
-              Real experiences from clients who trust Locs by Nya
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Testimonial 1 */}
-            <div className="bg-[#2a2520] rounded-xl shadow-lg p-6 border border-[#3d3630]">
-              <div className="mb-4">
-                <div className="flex text-[#a9856c] mb-2">
-                  {'★★★★★'.split('').map((star, i) => (
-                    <span key={i}>{star}</span>
-                  ))}
+          {/* KIDS LOC SERVICES (AGES 2-12) */}
+          <div className="mb-20 reveal-on-scroll">
+            <h3 className="font-serif text-3xl md:text-4xl font-bold text-[#F9FAFB] mb-8 text-center md:text-left">
+              Kids Loc Services <span className="text-[#14B8A6]">(Ages 2–12)</span>
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {/* Starter Locs - Kids */}
+              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all group">
+                <div className="h-1 w-16 bg-gradient-to-r from-[#4B2B1A] to-[#8B5A3C] mb-4"></div>
+                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
+                <h4 className="font-serif text-2xl font-bold text-[#F9FAFB] mb-3">Starter Locs</h4>
+                <p className="font-sans text-[#14B8A6] font-semibold mb-4">Starting at $165+</p>
+                <p className="font-sans text-[#9CA3AF] leading-relaxed mb-4 text-sm">
+                  This service establishes a strong and healthy loc foundation for your child. Pricing varies based on hair texture, density, length, desired loc size, and total loc count.
+                </p>
+                <div className="mt-4">
+                  <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Pricing considerations:</p>
+                  <ul className="space-y-1.5">
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Hair length and thickness</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Desired loc size (small, medium, or large)</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Total number of locs</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Full head versus half head installation</span>
+                    </li>
+                  </ul>
                 </div>
               </div>
-              <p className="text-[#d4c4b0] mb-4 leading-relaxed italic">
-                "Nya's attention to detail is unmatched. My locs have never looked better, and the booking process was so simple."
-              </p>
-              <p className="text-sm text-[#c0a996] font-medium">— Sarah M.</p>
-            </div>
 
-            {/* Testimonial 2 */}
-            <div className="bg-[#2a2520] rounded-xl shadow-lg p-6 border border-[#3d3630]">
-              <div className="mb-4">
-                <div className="flex text-[#a9856c] mb-2">
-                  {'★★★★★'.split('').map((star, i) => (
-                    <span key={i}>{star}</span>
-                  ))}
-                </div>
-              </div>
-              <p className="text-[#d4c4b0] mb-4 leading-relaxed italic">
-                "Professional, clean, and my starter locs are exactly what I wanted. Highly recommend!"
-              </p>
-              <p className="text-sm text-[#c0a996] font-medium">— Jessica T.</p>
-            </div>
-
-            {/* Testimonial 3 */}
-            <div className="bg-[#2a2520] rounded-xl shadow-lg p-6 border border-[#3d3630]">
-              <div className="mb-4">
-                <div className="flex text-[#a9856c] mb-2">
-                  {'★★★★★'.split('').map((star, i) => (
-                    <span key={i}>{star}</span>
-                  ))}
-                </div>
-              </div>
-              <p className="text-[#d4c4b0] mb-4 leading-relaxed italic">
-                "The retwist service is amazing. My locs feel healthy and look fresh every time."
-              </p>
-              <p className="text-sm text-[#c0a996] font-medium">— Maya K.</p>
-            </div>
-          </div>
-        </section>
-
-        {/* Section Divider */}
-        <div className="my-20 md:my-32">
-          <div className="h-px bg-gradient-to-r from-transparent via-[#3d3630] to-transparent"></div>
-        </div>
-
-        {/* BOOKING SECTION */}
-        <section id="booking" ref={bookingRef} className="mb-20 md:mb-32">
-          <div className="max-w-2xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-[#f5f4f4] mb-5 leading-tight tracking-tight">
-                Book Your Appointment
-              </h2>
-              <p className="text-lg text-[#d4c4b0] leading-[1.7] max-w-xl mx-auto">
-                New clients start with a quick consult so I can see your hair and recommend the best service.
-              </p>
-            </div>
-
-            <div className="bg-[#2a2520] rounded-xl shadow-lg p-8 md:p-10 border border-[#3d3630]">
-              {/* Form Progress Indicator */}
-              <div className="mb-8">
-                {(() => {
-                  const requiredFields = ['name', 'email', 'phone', 'clientType', 'service', 'preferredTimes', 'depositAgreed'];
-                  const completedFields = requiredFields.filter(field => {
-                    if (field === 'depositAgreed') return formData.depositAgreed;
-                    return formData[field as keyof typeof formData] !== '';
-                  }).length;
-                  const completionPercentage = Math.round((completedFields / requiredFields.length) * 100);
-                  
-                  return (
-                    <>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs text-[#c0a996]">Form Progress</span>
-                        <span className="text-xs text-[#c0a996]">{completionPercentage}% Complete</span>
-                      </div>
-                      <div className="w-full bg-[#1a1816] rounded-full h-2">
-                        <div 
-                          className="bg-[#a9856c] h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${completionPercentage}%` }}
-                        ></div>
-                      </div>
-                    </>
-                  );
-                })()}
-              </div>
-
-              {showSuccess ? (
-                <div className="text-center py-12">
-                  <div className="mb-6">
-                    <div className="w-16 h-16 bg-[#a9856c]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <svg className="w-8 h-8 text-[#a9856c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <h3 className="text-2xl font-bold text-[#f5f4f4] mb-3">Request Received!</h3>
-                    <p className="text-[#d4c4b0] leading-relaxed max-w-md mx-auto">
-                      Thank you! Your request has been received. Nya will email or text you to confirm your time and send the deposit link.
+              {/* Retwist + Style - Kids */}
+              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all group">
+                <div className="h-1 w-16 bg-gradient-to-r from-[#4B2B1A] to-[#8B5A3C] mb-4"></div>
+                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
+                <h4 className="font-serif text-2xl font-bold text-[#F9FAFB] mb-3">Retwist + Style</h4>
+                <p className="font-sans text-[#14B8A6] font-semibold mb-4">Starting at $135+</p>
+                <p className="font-sans text-[#9CA3AF] leading-relaxed mb-4 text-sm">
+                  This service refreshes the roots and finishes with an age-appropriate, protective style. It is ideal for maintaining starter locs or mature locs on children.
+                </p>
+                <div className="mt-4 space-y-4">
+                  <div>
+                    <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">What to know:</p>
+                    <p className="font-sans text-xs text-[#9CA3AF] leading-relaxed">
+                      I prefer that you arrive with a reference photo or clear idea of the style you are requesting so expectations and timing are aligned.
                     </p>
                   </div>
+                  <div>
+                    <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Style options may include:</p>
+                    <ul className="space-y-1.5">
+                      <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                        <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                        <span>Two strand twist styles</span>
+                      </li>
+                      <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                        <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                        <span>Barrel twists</span>
+                      </li>
+                      <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                        <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                        <span>Simple updos or ponytail styles</span>
+                      </li>
+                      <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                        <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                        <span>Protective braided or twisted loc styles suitable for children</span>
+                      </li>
+                    </ul>
+                  </div>
                 </div>
-              ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Name */}
+              </div>
+
+              {/* Loc Take Down + Detangle - Kids */}
+              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all group">
+                <div className="h-1 w-16 bg-gradient-to-r from-[#4B2B1A] to-[#8B5A3C] mb-4"></div>
+                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
+                <h4 className="font-serif text-2xl font-bold text-[#F9FAFB] mb-3">Loc Take Down + Detangle</h4>
+                <p className="font-sans text-[#14B8A6] font-semibold mb-4">Starting at $120+ for shoulder length</p>
+                <p className="font-sans text-[#9CA3AF] leading-relaxed mb-4 text-sm">
+                  This service involves carefully removing locs and detangling the hair using moisture and gentle techniques to preserve hair integrity. Final pricing depends on hair length, how long the locs have been installed, and the level of locking or matting present.
+                </p>
+                <div className="mt-4">
+                  <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Best for:</p>
+                  <ul className="space-y-1.5">
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Children restarting their loc journey</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Temporary loc installations</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Partially locked or early stage matting</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Add-On Services for Kids */}
+            <div className="mt-8">
+              <p className="font-sans text-lg font-semibold text-[#F9FAFB] mb-6 text-center md:text-left">Add-On Services for Kids</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 transition-all">
+                  <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
+                  <h4 className="font-serif text-xl font-bold text-[#F9FAFB] mb-3">Loc Detox</h4>
+                  <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mb-4">
+                    A loc detox is a deep cleansing treatment that removes product buildup, lint, sweat residue, and environmental debris trapped within the locs. I use a clarifying process that may include baking soda, followed by a moisturizing reset to maintain softness and scalp comfort.
+                  </p>
+                  <div>
+                    <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Recommended when:</p>
+                    <ul className="space-y-1.5">
+                      <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                        <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                        <span>Locs feel heavy or dull</span>
+                      </li>
+                      <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                        <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                        <span>Visible buildup is present</span>
+                      </li>
+                      <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                        <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                        <span>Your child swims frequently or uses multiple products</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 transition-all">
+                  <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
+                  <h4 className="font-serif text-xl font-bold text-[#F9FAFB] mb-3">Scalp or Oil Treatment</h4>
+                  <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mb-4">
+                    This treatment targets dryness, itchiness, and scalp irritation. I apply a focused scalp routine followed by a light oil seal when appropriate to restore balance and comfort.
+                  </p>
+                  <div>
+                    <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Recommended when:</p>
+                    <ul className="space-y-1.5">
+                      <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                        <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                        <span>The scalp appears dry or flaky</span>
+                      </li>
+                      <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                        <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                        <span>There is itchiness or tightness</span>
+                      </li>
+                      <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                        <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                        <span>Additional moisture support is needed between visits</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* TEENS & ADULTS (AGES 13+) */}
+          <div className="mb-20 reveal-on-scroll">
+            <h3 className="font-serif text-3xl md:text-4xl font-bold text-[#F9FAFB] mb-8 text-center md:text-left">
+              Teens & Adults <span className="text-[#14B8A6]">(Ages 13 and Older)</span>
+            </h3>
+            <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-8 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all">
+              <div className="h-1 w-16 bg-gradient-to-r from-[#4B2B1A] to-[#8B5A3C] mb-4"></div>
+              <div className="h-0.5 w-8 bg-[#14B8A6] mb-6"></div>
+              <h4 className="font-serif text-3xl font-bold text-[#F9FAFB] mb-6">Starter Locs</h4>
+              
+              <div className="space-y-4 mb-6">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-[#f5f4f4] mb-2.5 tracking-wide">
-                    Name
+                  <p className="font-sans text-[#14B8A6] font-semibold text-lg mb-2">Short length starting at $165+</p>
+                  <p className="font-sans text-sm text-[#9CA3AF]">For hair approximately 4 inches to ear length.</p>
+                </div>
+                <div>
+                  <p className="font-sans text-[#14B8A6] font-semibold text-lg mb-2">Shoulder length starting at $185+</p>
+                </div>
+              </div>
+
+              <p className="font-sans text-[#9CA3AF] leading-relaxed mb-6">
+                Pricing is influenced by hair density, length beyond shoulder, and loc size selection.
+              </p>
+
+              <div className="space-y-6">
+                <div>
+                  <p className="font-sans text-base font-semibold text-[#F9FAFB] mb-3">Important notes before your appointment:</p>
+                  <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed">
+                    Please come with a preferred loc size reference, either photos or a clear description of the look you are aiming to achieve.
+                  </p>
+                </div>
+                <div>
+                  <p className="font-sans text-base font-semibold text-[#F9FAFB] mb-3">Factors that affect final pricing and outcome:</p>
+                  <ul className="space-y-2">
+                    <li className="font-sans text-sm text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Loc width and size preference</span>
+                    </li>
+                    <li className="font-sans text-sm text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Parting style selection</span>
+                    </li>
+                    <li className="font-sans text-sm text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Full head or half head coverage</span>
+                    </li>
+                    <li className="font-sans text-sm text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Hairline and forehead preference</span>
+                    </li>
+                    <li className="font-sans text-sm text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Total loc count</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mt-6 italic">
+                This ensures your install reflects your vision and sets your locs up to mature exactly how you want them to.
+              </p>
+            </div>
+
+            {/* Retwist & Maintenance - Adults */}
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all">
+                <div className="h-1 w-16 bg-gradient-to-r from-[#4B2B1A] to-[#8B5A3C] mb-4"></div>
+                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
+                <h4 className="font-serif text-2xl font-bold text-[#F9FAFB] mb-3">Retwist & Maintenance</h4>
+                <p className="font-sans text-[#9CA3AF] leading-relaxed mb-4">
+                  Clean parts, healthy tension, and scalp care for existing locs. Regular maintenance to keep your locs thriving and looking their best.
+                </p>
+                <p className="font-sans text-[#14B8A6] font-semibold">Starting at $135+</p>
+              </div>
+
+              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all">
+                <div className="h-1 w-16 bg-gradient-to-r from-[#4B2B1A] to-[#8B5A3C] mb-4"></div>
+                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
+                <h4 className="font-serif text-2xl font-bold text-[#F9FAFB] mb-3">Repair / Deep Care</h4>
+                <p className="font-sans text-[#9CA3AF] leading-relaxed mb-4">
+                  Strengthening weak spots, repairing breakage, and restoring structure. Specialized care when your locs need extra attention.
+                </p>
+                <p className="font-sans text-[#14B8A6] font-semibold">Pricing varies</p>
+              </div>
+            </div>
+          </div>
+
+          {/* EXTENDED SERVICES & CONVENIENCE OPTIONS */}
+          <div className="mb-20 reveal-on-scroll">
+            <h3 className="font-serif text-3xl md:text-4xl font-bold text-[#F9FAFB] mb-4 text-center md:text-left">
+              Extended Services & Convenience Options
+            </h3>
+            <p className="font-sans text-lg text-[#9CA3AF] mb-8 max-w-3xl leading-relaxed">
+              I understand that families, teens, and adults all have different schedules and needs. I offer flexible options designed to support consistency, comfort, and long term loc health.
+            </p>
+            <div className="space-y-6">
+              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 transition-all">
+                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
+                <div className="flex items-center gap-3 mb-4">
+                  <h4 className="font-serif text-2xl font-bold text-[#F9FAFB]">Late Night / Early Morning Service Availability</h4>
+                  <span className="px-3 py-1 rounded-full bg-[#14B8A6]/20 text-[#14B8A6] text-xs font-semibold font-sans">By request only</span>
+                </div>
+                <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mb-4">
+                  I offer limited late night and early morning appointment availability for clients who work nontraditional hours or need flexibility. These appointments are scheduled in advance and are priced based on the service requested, time, and complexity of the style.
+                </p>
+                <div>
+                  <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Please note:</p>
+                  <ul className="space-y-1.5">
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Late night/early morning availability is not walk-in</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Confirmation is required prior to booking</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Pricing varies depending on service type and duration</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 transition-all">
+                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
+                <h4 className="font-serif text-2xl font-bold text-[#F9FAFB] mb-4">Free Tours and Consultations</h4>
+                <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mb-4">
+                  I offer free tours and brief consultations for new clients who want to see the space, ask questions, or better understand the loc process before committing. This is especially helpful for parents starting children on their loc journey or for clients beginning their first install.
+                </p>
+                <div>
+                  <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Tours are ideal for:</p>
+                  <ul className="space-y-1.5">
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>First time loc clients</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Parents of younger children</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Clients transitioning from loose natural hair</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Clients planning a long term loc journey</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 transition-all">
+                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
+                <div className="flex items-center gap-3 mb-4">
+                  <h4 className="font-serif text-2xl font-bold text-[#F9FAFB]">House Calls</h4>
+                  <span className="px-3 py-1 rounded-full bg-[#14B8A6]/20 text-[#14B8A6] text-xs font-semibold font-sans">Additional $60+ depending on range and accessibility</span>
+                </div>
+                <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mb-4">
+                  I offer house call appointments for clients who need in-home service. This fee is added on top of the selected service and covers travel, setup, and time.
+                </p>
+                <div>
+                  <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Please note:</p>
+                  <ul className="space-y-1.5">
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>House calls must be scheduled in advance</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Location and parking availability may affect booking approval</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>All house calls require confirmation prior to the appointment date</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ADD-ON TREATMENTS & STYLE UPGRADES */}
+          <div className="mb-20 reveal-on-scroll">
+            <h3 className="font-serif text-3xl md:text-4xl font-bold text-[#F9FAFB] mb-4 text-center md:text-left">
+              Add-On Services
+            </h3>
+            <p className="font-sans text-lg text-[#9CA3AF] mb-8 max-w-3xl leading-relaxed">
+              These services can be added to any appointment unless otherwise noted.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all">
+                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-serif text-xl font-bold text-[#F9FAFB]">Loc Detox</h4>
+                  <span className="px-3 py-1 rounded-full bg-[#14B8A6]/20 text-[#14B8A6] text-sm font-semibold font-sans">+ $30.00</span>
+                </div>
+                <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mb-4">
+                  A deep cleansing treatment that removes buildup, lint, sweat residue, and environmental debris trapped inside the locs. I typically use a clarifying method that may include baking soda, followed by a balancing rinse and moisture reset.
+                </p>
+                <div>
+                  <p className="font-sans text-xs font-semibold text-[#F9FAFB] mb-2">Recommended for:</p>
+                  <ul className="space-y-1.5">
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Heavy product users</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Active lifestyles or swimmers</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Locs that appear dull or stiff</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all">
+                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-serif text-xl font-bold text-[#F9FAFB]">Loc Oil Treatment</h4>
+                  <span className="px-3 py-1 rounded-full bg-[#14B8A6]/20 text-[#14B8A6] text-sm font-semibold font-sans">+ $25.00</span>
+                </div>
+                <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mb-4">
+                  This treatment focuses on restoring moisture and sealing hydration into the loc and scalp using lightweight oils appropriate for loc maintenance.
+                </p>
+                <div>
+                  <p className="font-sans text-xs font-semibold text-[#F9FAFB] mb-2">Helps with:</p>
+                  <ul className="space-y-1.5">
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Dryness</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Dullness</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Scalp comfort between retwists</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all">
+                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-serif text-xl font-bold text-[#F9FAFB]">Scalp Treatment</h4>
+                  <span className="px-3 py-1 rounded-full bg-[#14B8A6]/20 text-[#14B8A6] text-sm font-semibold font-sans">+ $30.00</span>
+                </div>
+                <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed">
+                  A targeted scalp service designed to address dryness, itchiness, tightness, and mild flaking. This service supports long term scalp health and comfort.
+                </p>
+              </div>
+
+              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all">
+                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-serif text-xl font-bold text-[#F9FAFB]">Loc Repair and Maintenance</h4>
+                  <span className="px-3 py-1 rounded-full bg-[#14B8A6]/20 text-[#14B8A6] text-sm font-semibold font-sans">+ $15.00 each reattachment</span>
+                </div>
+                <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed">
+                  This includes reinforcing weak locs, thinning areas, or early stage separation, as well as completely detached locs. I will tool the hair and repair or reattach the loc with durability.
+                </p>
+              </div>
+
+              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all md:col-span-2 lg:col-span-1">
+                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
+                <h4 className="font-serif text-xl font-bold text-[#F9FAFB] mb-3">Style Add Ons</h4>
+                <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mb-4">
+                  I offer style flexibility depending on hair length, loc maturity, and desired outcome. Any style may be requested as long as it is appropriate for the hair's condition and stage.
+                </p>
+                <div>
+                  <p className="font-sans text-xs font-semibold text-[#F9FAFB] mb-2">Examples include:</p>
+                  <ul className="space-y-1.5 mb-3">
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Upstyles</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Barrel twists</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Two strand twists</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Special occasion styles</span>
+                    </li>
+                  </ul>
+                  <p className="font-sans text-xs text-[#14B8A6] font-semibold">Pricing varies by complexity and time.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* LOC COLOR SERVICES */}
+          <div className="mb-20 reveal-on-scroll">
+            <h3 className="font-serif text-3xl md:text-4xl font-bold text-[#F9FAFB] mb-8 text-center md:text-left">
+              Loc Color Services
+            </h3>
+            <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-8 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all max-w-3xl">
+              <div className="h-1 w-16 bg-gradient-to-r from-[#4B2B1A] to-[#8B5A3C] mb-4"></div>
+              <div className="h-0.5 w-8 bg-[#14B8A6] mb-6"></div>
+              <h4 className="font-serif text-3xl font-bold text-[#F9FAFB] mb-4">Color Enhancement for Locs</h4>
+              <p className="font-sans text-[#14B8A6] font-semibold text-lg mb-4">Starting at $40+</p>
+              <p className="font-sans text-[#9CA3AF] leading-relaxed mb-6">
+                This service includes color enhancement or magnet-style color placement for locs. Pricing varies based on hair length, desired look, color placement, and number of locs being colored.
+              </p>
+              <div>
+                <p className="font-sans text-base font-semibold text-[#F9FAFB] mb-3">Important notes:</p>
+                <ul className="space-y-2">
+                  <li className="font-sans text-sm text-[#9CA3AF] flex items-start">
+                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                    <span>Color services are add-ons and must be booked in advance</span>
+                  </li>
+                  <li className="font-sans text-sm text-[#9CA3AF] flex items-start">
+                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                    <span>Final pricing is determined by length, density, and design choice</span>
+                  </li>
+                  <li className="font-sans text-sm text-[#9CA3AF] flex items-start">
+                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                    <span>Photos or inspiration are strongly recommended to ensure accuracy</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* FINAL NOTES */}
+          <div className="reveal-on-scroll">
+            <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/30 border-t-4 border-t-[#14B8A6] p-8 md:p-10">
+              <p className="font-sans text-base md:text-lg text-[#9CA3AF] leading-relaxed max-w-4xl mx-auto text-center">
+                I aim to provide a calm, professional, and supportive experience for every client. My goal is not just styling, but long term loc health, comfort, and confidence. If you are unsure which service to book, I recommend starting with a consultation or tour so we can align on expectations before your appointment.
+              </p>
+            </div>
+          </div>
+        </div>
+        </section>
+
+      {/* GALLERY SECTION */}
+      <section id="gallery" className="py-20 md:py-32 bg-[#0B0F13] text-[#F9FAFB] relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <header className="text-center mb-16 reveal-on-scroll">
+            <p className="text-xs uppercase tracking-wide text-[#14B8A6] font-sans font-semibold mb-2">
+              WORK BY NYA
+            </p>
+            <h2 className="font-serif text-4xl md:text-5xl font-bold text-[#F9FAFB] mb-4">
+              Gallery
+            </h2>
+            <p className="font-sans text-lg text-[#9CA3AF] max-w-2xl mx-auto">
+              Clean parts. Sharp lines. Healthy locs.
+            </p>
+          </header>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            {[1, 2, 3, 4, 5, 6].map((num) => (
+              <figure
+                key={num}
+                className="group aspect-[4/5] rounded-xl overflow-hidden border border-[#8B5A3C]/20 bg-[#050609] relative hover:border-[#8B5A3C]/40 hover:scale-[1.02] transition-all duration-300 reveal-on-scroll"
+              >
+                {/* Gradient placeholder content */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#4B2B1A]/50 via-[#8B5A3C]/30 to-[#050609] flex items-end p-3">
+                  <div className="w-full">
+                    <p className="text-[#14B8A6] font-sans text-[10px] font-semibold uppercase tracking-wide">Gallery image coming soon</p>
+                    <p className="text-[#9CA3AF] font-sans text-[9px] mt-0.5">Client work placeholder</p>
+                </div>
+              </div>
+              </figure>
+                  ))}
+                </div>
+              </div>
+      </section>
+
+      {/* BOOKING SECTION */}
+      <section id="book" className="py-20 md:py-32 bg-[#050609] relative">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="bg-[#0B0F13] rounded-3xl border border-[#8B5A3C]/30 border-t-4 border-t-[#14B8A6] p-8 md:p-10 shadow-[0_20px_60px_rgba(0,0,0,0.5)] reveal-on-scroll">
+            <div className="mb-8">
+              <p className="text-xs uppercase tracking-wide text-[#14B8A6] font-sans font-semibold mb-2">
+                BOOK AN APPOINTMENT
+              </p>
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-[#F9FAFB] mb-2">
+                Tell Nya what you need
+              </h2>
+            </div>
+
+            {/* Deposit Notice */}
+            <div className="mb-6 p-4 rounded-xl bg-[#050609] border border-[#8B5A3C]/30 border-l-4 border-l-[#14B8A6]">
+              <p className="font-sans text-sm text-[#F9FAFB] leading-relaxed">
+                <strong className="text-[#8B5A3C]">$25 Security Deposit Required:</strong> A <span className="text-[#14B8A6] font-semibold">$25 security deposit</span> is required to hold your appointment. The deposit goes toward your total and is non-refundable for late cancellations or no-shows.
+              </p>
+            </div>
+
+            {/* Appointment Expectations & Cancellation Policy */}
+            <div className="mb-8 p-6 rounded-xl bg-[#050609] border border-[#8B5A3C]/20">
+              <h3 className="font-serif text-2xl font-bold text-[#F9FAFB] mb-6">
+                Appointment Expectations & Cancellation Policy
+              </h3>
+              
+              {/* Appointment Expectations */}
+              <div className="mb-6">
+                <h4 className="font-sans text-base font-semibold text-[#F9FAFB] mb-3">
+                  Appointment Expectations
+                </h4>
+                <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mb-3">
+                  To keep everyone's time respected and your service running smoothly:
+                </p>
+                <ul className="space-y-2 ml-4">
+                  <li className="font-sans text-sm text-[#9CA3AF] leading-relaxed flex items-start">
+                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                    <span>Please arrive 15 minutes early</span>
+                  </li>
+                  <li className="font-sans text-sm text-[#9CA3AF] leading-relaxed flex items-start">
+                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                    <span>No extra guests or children unless they are receiving a service (we do accept walk-ins)</span>
+                  </li>
+                </ul>
+            </div>
+
+              {/* Cancellation Policy */}
+                  <div className="mb-6">
+                <h4 className="font-sans text-base font-semibold text-[#F9FAFB] mb-3">
+                  Cancellation Policy
+                </h4>
+                <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed">
+                  You may cancel or reschedule up to 24 hours before your appointment. Any cancellation after that window, as well as no-shows, will require a 50% service fee before booking your next appointment. This ensures fairness to all clients and protects my time.
+                </p>
+                    </div>
+
+              {/* Gratitude Message */}
+              <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed italic border-t border-[#8B5A3C]/20 pt-4">
+                Thank you for choosing me to care for your locs. My goal is to make sure every client leaves confident, refreshed, and fully satisfied with their service.
+                    </p>
+                  </div>
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Client Type */}
+                <div>
+                <label htmlFor="clientType" className="block text-sm font-semibold text-[#F9FAFB] mb-2 font-sans uppercase tracking-wide">
+                  Client Type
+                  </label>
+                <select
+                  id="clientType"
+                  name="clientType"
+                    required
+                  value={formData.clientType}
+                    onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg border border-[#8B5A3C]/30 bg-[#050609] text-[#F9FAFB] font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/40 focus:border-[#14B8A6] transition-colors"
+                >
+                  <option value="">Select client type</option>
+                  <option value="new">New client</option>
+                  <option value="returning">Returning client</option>
+                </select>
+                {isNewClient && (
+                  <p className="mt-2 text-sm text-[#9CA3AF] leading-relaxed">
+                    New clients must upload photos/video of their hair so Nya can see your hair texture and condition.
+                  </p>
+                )}
+                </div>
+
+              {/* Service */}
+                <div>
+                <label htmlFor="service" className="block text-sm font-semibold text-[#F9FAFB] mb-2 font-sans uppercase tracking-wide">
+                  Service
+                  </label>
+                <select
+                  id="service"
+                  name="service"
+                    required
+                  value={formData.service}
+                    onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg border border-[#8B5A3C]/30 bg-[#050609] text-[#F9FAFB] font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/40 focus:border-[#14B8A6] transition-colors"
+                >
+                  <option value="">Select a service</option>
+                  {isNewClient && (
+                    <option value="new-client-consultation">New Client Consultation</option>
+                  )}
+                  <option value="retwist">Retwist & Cleanse</option>
+                  <option value="starter-locs">Starter Locs (Consult + Install)</option>
+                  <option value="maintenance-style">Maintenance & Style</option>
+                  <option value="repair-deep">Repair / Reconstruct</option>
+                </select>
+              </div>
+
+              {/* New Client File Upload */}
+              {isNewClient && (
+                <div>
+                  <label htmlFor="hairFiles" className="block text-sm font-semibold text-[#F9FAFB] mb-2 font-sans uppercase tracking-wide">
+                    Upload photos/videos <span className="text-xs font-normal normal-case text-[#9CA3AF]">(Multiple files allowed • Required for new clients)</span>
+                  </label>
+                  <input
+                    type="file"
+                    id="hairFiles"
+                    name="hairFiles"
+                    multiple
+                    accept="image/*,video/*"
+                    onChange={handleFileChange}
+                    className="w-full px-4 py-3 rounded-lg border border-[#8B5A3C]/30 bg-[#050609] text-[#F9FAFB] font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/40 focus:border-[#14B8A6] transition-colors file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#8B5A3C] file:text-white hover:file:bg-[#8B5A3C]/80"
+                  />
+                  {hairFiles && hairFiles.length > 0 && (
+                    <div className="mt-3 p-3 rounded-lg bg-[#050609] border border-[#8B5A3C]/30">
+                      <p className="text-sm font-semibold text-[#F9FAFB] mb-2">
+                        {hairFiles.length} file{hairFiles.length > 1 ? 's' : ''} selected:
+                      </p>
+                      <ul className="space-y-1">
+                        {Array.from(hairFiles).map((file, index) => (
+                          <li key={index} className="text-xs text-[#9CA3AF] flex items-center gap-2">
+                            <span className="text-[#14B8A6]">•</span>
+                            <span className="truncate">{file.name}</span>
+                            <span className="text-[#9CA3AF]/60">({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                          </li>
+                        ))}
+                      </ul>
+                </div>
+                  )}
+                </div>
+              )}
+
+              {/* Date and Time Window - Inline */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="date" className="block text-sm font-semibold text-[#F9FAFB] mb-2 font-sans uppercase tracking-wide">
+                    Preferred date
+                  </label>
+                  <input
+                    type="date"
+                    id="date"
+                    name="date"
+                    required
+                    value={formData.date}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-lg border border-[#8B5A3C]/30 bg-[#050609] text-[#F9FAFB] font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/40 focus:border-[#14B8A6] transition-colors"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="time-window" className="block text-sm font-semibold text-[#F9FAFB] mb-2 font-sans uppercase tracking-wide">
+                    Preferred day & time
+                  </label>
+                  <select
+                    id="time-window"
+                    name="timeWindow"
+                    required
+                    value={formData.timeWindow}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-lg border border-[#8B5A3C]/30 bg-[#050609] text-[#F9FAFB] font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/40 focus:border-[#14B8A6] transition-colors"
+                  >
+                    <option value="">Select a day & time</option>
+                    <option value="thursday-5pm-10pm">Thursday (5pm-10pm)</option>
+                    <option value="friday-5pm-10pm">Friday (5pm-10pm)</option>
+                    <option value="saturday-9am-9pm">Saturday (9am-9pm)</option>
+                    <option value="sunday-9am-9pm">Sunday (9am-9pm)</option>
+                  </select>
+                </div>
+                </div>
+
+              {/* Name and Email - Inline */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-semibold text-[#F9FAFB] mb-2 font-sans uppercase tracking-wide">
+                    Full name
                   </label>
                   <input
                     type="text"
@@ -503,15 +1153,13 @@ export default function Home() {
                     required
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-[#3d3630] rounded-lg focus:ring-2 focus:ring-[#a9856c] focus:border-[#a9856c] outline-none transition bg-[#1a1816] text-[#f5f4f4] text-base leading-relaxed"
-                    placeholder="Your full name"
+                    placeholder="First & last name"
+                    className="w-full px-4 py-3 rounded-lg border border-[#8B5A3C]/30 bg-[#050609] text-[#F9FAFB] placeholder-[#9CA3AF]/50 font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/40 focus:border-[#14B8A6] transition-colors"
                   />
                 </div>
-
-                {/* Email */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-[#f5f4f4] mb-2.5 tracking-wide">
-                    Email
+                  <label htmlFor="email" className="block text-sm font-semibold text-[#F9FAFB] mb-2 font-sans uppercase tracking-wide">
+                    Email address
                   </label>
                   <input
                     type="email"
@@ -520,239 +1168,257 @@ export default function Home() {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-[#3d3630] rounded-lg focus:ring-2 focus:ring-[#a9856c] focus:border-[#a9856c] outline-none transition bg-[#1a1816] text-[#f5f4f4] text-base leading-relaxed"
-                    placeholder="your.email@example.com"
+                    placeholder="your@email.com"
+                    className="w-full px-4 py-3 rounded-lg border border-[#8B5A3C]/30 bg-[#050609] text-[#F9FAFB] placeholder-[#9CA3AF]/50 font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/40 focus:border-[#14B8A6] transition-colors"
                   />
                 </div>
+                </div>
 
-                {/* Phone */}
+              {/* Phone */}
                 <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-[#f5f4f4] mb-2.5 tracking-wide">
-                    Phone
+                <label htmlFor="phone" className="block text-sm font-semibold text-[#F9FAFB] mb-2 font-sans uppercase tracking-wide">
+                  Mobile number
                   </label>
                   <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
-                    required
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-[#3d3630] rounded-lg focus:ring-2 focus:ring-[#a9856c] focus:border-[#a9856c] outline-none transition bg-[#1a1816] text-[#f5f4f4] text-base leading-relaxed"
-                    placeholder="(555) 123-4567"
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  required
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="(xxx) xxx-xxxx"
+                  className="w-full px-4 py-3 rounded-lg border border-[#8B5A3C]/30 bg-[#050609] text-[#F9FAFB] placeholder-[#9CA3AF]/50 font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/40 focus:border-[#14B8A6] transition-colors"
                   />
                 </div>
 
-                {/* Client Type */}
+              {/* Notes */}
                 <div>
-                  <label htmlFor="clientType" className="block text-sm font-medium text-[#f5f4f4] mb-2.5 tracking-wide">
-                    Are you a new or existing client?
-                  </label>
-                  <select
-                    id="clientType"
-                    name="clientType"
-                    required
-                    value={formData.clientType}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-[#3d3630] rounded-lg focus:ring-2 focus:ring-[#a9856c] focus:border-[#a9856c] outline-none transition bg-[#1a1816] text-[#f5f4f4] text-base leading-relaxed"
-                  >
-                    <option value="">Select one</option>
-                    <option value="new">New client</option>
-                    <option value="existing">Existing client</option>
-                  </select>
-                </div>
-
-                {/* Desired Service */}
-                <div>
-                  <label htmlFor="service" className="block text-sm font-medium text-[#f5f4f4] mb-2.5 tracking-wide">
-                    Desired service
-                  </label>
-                  <select
-                    id="service"
-                    name="service"
-                    required
-                    value={formData.service}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-[#3d3630] rounded-lg focus:ring-2 focus:ring-[#a9856c] focus:border-[#a9856c] outline-none transition bg-[#1a1816] text-[#f5f4f4] text-base leading-relaxed"
-                  >
-                    <option value="">Select a service</option>
-                    <option value="starter-locs">Starter Locs</option>
-                    <option value="retwist">Loc Retwist & Maintenance</option>
-                    <option value="repair">Loc Repair & Reconstruction</option>
-                    <option value="styles">Styles & Add-Ons</option>
-                  </select>
-                </div>
-
-                {/* Preferred Days/Times */}
-                <div>
-                  <label htmlFor="preferredTimes" className="block text-sm font-medium text-[#f5f4f4] mb-2.5 tracking-wide">
-                    Preferred days/times
+                <label htmlFor="notes" className="block text-sm font-semibold text-[#F9FAFB] mb-2 font-sans uppercase tracking-wide">
+                  Notes
                   </label>
                   <textarea
-                    id="preferredTimes"
-                    name="preferredTimes"
-                    rows={3}
-                    required
-                    value={formData.preferredTimes}
+                  id="notes"
+                  name="notes"
+                  rows={3}
+                  value={formData.notes}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-[#3d3630] rounded-lg focus:ring-2 focus:ring-[#a9856c] focus:border-[#a9856c] outline-none transition resize-none bg-[#1a1816] text-[#f5f4f4] text-base leading-relaxed"
-                    placeholder="e.g., Weekday mornings, Saturday afternoons, etc."
+                  placeholder="Tell Nya about your locs, your hair history, or what you're looking for."
+                  className="w-full px-4 py-3 rounded-lg border border-[#8B5A3C]/30 bg-[#050609] text-[#F9FAFB] placeholder-[#9CA3AF]/50 font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/40 focus:border-[#14B8A6] transition-colors resize-none"
                   />
                 </div>
 
-                {/* File Upload */}
-                <div>
-                  <label htmlFor="hairPhotos" className="block text-sm font-medium text-[#f5f4f4] mb-2.5 tracking-wide leading-relaxed">
-                    Upload 1–3 photos or a short video of your hair (optional but recommended)
-                  </label>
-                  <input
-                    type="file"
-                    id="hairPhotos"
-                    name="hairPhotos"
-                    accept="image/*,video/*"
-                    multiple
-                    className="w-full px-4 py-3 border border-[#3d3630] rounded-lg focus:ring-2 focus:ring-[#a9856c] focus:border-[#a9856c] outline-none transition bg-[#1a1816] text-[#f5f4f4] text-base file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#3d3630] file:text-[#c0a996] hover:file:bg-[#4a423a]"
-                  />
-                </div>
-
-                {/* Hair Notes */}
-                <div>
-                  <label htmlFor="hairNotes" className="block text-sm font-medium text-[#f5f4f4] mb-2.5 tracking-wide">
-                    Anything I should know about your hair or locs?
-                  </label>
-                  <textarea
-                    id="hairNotes"
-                    name="hairNotes"
-                    rows={4}
-                    value={formData.hairNotes}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-[#3d3630] rounded-lg focus:ring-2 focus:ring-[#a9856c] focus:border-[#a9856c] outline-none transition resize-none bg-[#1a1816] text-[#f5f4f4] text-base leading-relaxed"
-                    placeholder="Share any relevant details about your hair type, current loc condition, or specific concerns..."
-                  />
-                </div>
-
-                {/* Deposit Checkbox */}
-                <div className="flex items-start gap-3">
+              {/* Deposit Agreement Checkbox */}
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-[#050609] border border-[#8B5A3C]/30">
                   <input
                     type="checkbox"
                     id="depositAgreed"
                     name="depositAgreed"
                     required
-                    checked={formData.depositAgreed}
-                    onChange={handleChange}
-                    className="mt-1 w-5 h-5 border border-[#3d3630] rounded focus:ring-2 focus:ring-[#a9856c] text-[#a9856c] bg-[#1a1816]"
-                  />
-                  <label htmlFor="depositAgreed" className="text-sm text-[#d4c4b0] leading-[1.7]">
-                    I understand a $25 non-refundable security deposit is required to secure my appointment.
+                  checked={depositAgreed}
+                  onChange={(e) => setDepositAgreed(e.target.checked)}
+                  className="mt-1 w-5 h-5 border border-[#8B5A3C]/30 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#8B5A3C] bg-[#0B0F13]"
+                />
+                <label htmlFor="depositAgreed" className="text-sm text-[#F9FAFB] leading-relaxed cursor-pointer">
+                  I understand and agree to the <span className="text-[#14B8A6] font-semibold">$25 security deposit</span> and booking policy.
                   </label>
                 </div>
+
+              {/* Policy Acknowledgment */}
+              <p className="text-xs text-center text-[#9CA3AF] font-sans leading-relaxed -mt-2">
+                By booking, you acknowledge the appointment expectations and cancellation policy above.
+              </p>
 
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-full bg-[#a9856c] hover:bg-[#836350] text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg hover:scale-[1.02]"
+                disabled={!depositAgreed}
+                className="w-full bg-gradient-to-r from-[#4B2B1A] to-[#8B5A3C] text-white rounded-2xl px-6 py-3 font-semibold font-sans hover:shadow-lg hover:shadow-[#8B5A3C]/30 transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#8B5A3C] focus:ring-offset-2 focus:ring-offset-[#0B0F13] disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
                 >
-                  Request Booking
+                Continue to Details
                 </button>
 
-                {/* Note under button */}
-                <p className="text-xs text-center text-[#c0a996] leading-[1.6]">
-                  You will not be charged automatically. I personally confirm all appointments and send your $25 deposit link via text or email.
+              {/* Fine Print */}
+              <p className="text-xs text-center text-[#9CA3AF] font-sans leading-relaxed">
+                You'll receive a text or email once your appointment is confirmed.
                 </p>
               </form>
-              )}
             </div>
           </div>
         </section>
 
-        {/* Section Divider */}
-        <div className="my-20 md:my-32">
-          <div className="h-px bg-gradient-to-r from-transparent via-[#3d3630] to-transparent"></div>
-        </div>
-
-        {/* FAQ / POLICIES SECTION */}
-        <section id="faq" ref={faqRef} className="mb-12">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-[#f5f4f4] mb-10 text-center leading-tight tracking-tight">
-              Quick Policies & FAQs
+      {/* POLICIES SECTION */}
+      <section id="policies" className="py-20 md:py-32 bg-[#050609] relative">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <header className="text-center mb-12 reveal-on-scroll">
+            <p className="text-xs uppercase tracking-wide text-[#14B8A6] font-sans font-semibold mb-2">
+              BEFORE YOU BOOK
+            </p>
+            <h2 className="font-serif text-4xl md:text-5xl font-bold text-[#F9FAFB] mb-4">
+              Policies & what to know
             </h2>
+          </header>
 
-            <div className="space-y-6 mb-10">
-              {/* FAQ 1 */}
-              <div className="bg-[#2a2520] rounded-xl shadow-lg p-6 border border-[#3d3630]">
-                <h3 className="text-lg font-semibold text-[#f5f4f4] mb-3 leading-tight tracking-tight">
-                  Do you require a deposit?
-                </h3>
-                <p className="text-[#d4c4b0] leading-[1.7] text-base">
-                  Yes, a $25 security deposit is required for all bookings. The remaining balance is paid at your appointment.
-                </p>
-              </div>
+          <div className="space-y-4">
+            {/* Policy 1 - Deposit */}
+            <details className="rounded-xl bg-[#0B0F13] border border-[#8B5A3C]/20 px-6 py-4 group hover:border-[#8B5A3C]/40 transition-colors reveal-on-scroll">
+              <summary className="font-sans font-bold text-[#F9FAFB] cursor-pointer list-none">
+                <span className="flex items-center justify-between">
+                  <span>Is there a deposit to book?</span>
+                  <span className="text-lg text-[#14B8A6] group-open:rotate-180 transition-transform">▼</span>
+                </span>
+              </summary>
+              <p className="mt-4 font-sans text-[#9CA3AF] leading-relaxed">
+                Yes, a $25 security deposit is required to hold your appointment. The deposit goes toward your total service cost. The deposit is non-refundable if you cancel or reschedule less than 24 hours before your appointment time.
+              </p>
+            </details>
 
-              {/* FAQ 2 */}
-              <div className="bg-[#2a2520] rounded-xl shadow-lg p-6 border border-[#3d3630]">
-                <h3 className="text-lg font-semibold text-[#f5f4f4] mb-3 leading-tight tracking-tight">
-                  Where will my appointment be?
-                </h3>
-                <p className="text-[#d4c4b0] leading-[1.7] text-base">
-                  Exact location and instructions are sent after your booking is confirmed.
-                </p>
-              </div>
+            {/* Policy 2 - New Clients */}
+            <details className="rounded-xl bg-[#0B0F13] border border-[#8B5A3C]/20 px-6 py-4 group hover:border-[#8B5A3C]/40 transition-colors reveal-on-scroll">
+              <summary className="font-sans font-bold text-[#F9FAFB] cursor-pointer list-none">
+                <span className="flex items-center justify-between">
+                  <span>I'm a new client—how do I book?</span>
+                  <span className="text-lg text-[#14B8A6] group-open:rotate-180 transition-transform">▼</span>
+                </span>
+              </summary>
+              <p className="mt-4 font-sans text-[#9CA3AF] leading-relaxed">
+                New clients should select "New Client Consultation" when booking. You'll be asked to upload photos or a short video of your hair so Nya can see your hair texture and condition. After reviewing your photos/video, Nya will recommend the best service for you.
+              </p>
+            </details>
 
-              {/* FAQ 3 */}
-              <div className="bg-[#2a2520] rounded-xl shadow-lg p-6 border border-[#3d3630]">
-                <h3 className="text-lg font-semibold text-[#f5f4f4] mb-3 leading-tight tracking-tight">
-                  What if I need to cancel or reschedule?
-                </h3>
-                <p className="text-[#d4c4b0] leading-[1.7] text-base">
-                  Please give at least 24–48 hours notice. Deposits are non-refundable but may be transferable depending on notice.
-                </p>
-              </div>
+            {/* Policy 3 */}
+            <details className="rounded-xl bg-[#0B0F13] border border-[#8B5A3C]/20 px-6 py-4 group hover:border-[#8B5A3C]/40 transition-colors reveal-on-scroll">
+              <summary className="font-sans font-bold text-[#F9FAFB] cursor-pointer list-none">
+                <span className="flex items-center justify-between">
+                  <span>Do you accept new clients?</span>
+                  <span className="text-lg text-[#14B8A6] group-open:rotate-180 transition-transform">▼</span>
+                </span>
+              </summary>
+              <p className="mt-4 font-sans text-[#9CA3AF] leading-relaxed">
+                Yes – new clients are accepted based on availability. If no slots show for your preferred date, you can join the waitlist and you'll be contacted as openings come up.
+              </p>
+            </details>
 
-              {/* FAQ 4 */}
-              <div className="bg-[#2a2520] rounded-xl shadow-lg p-6 border border-[#3d3630]">
-                <h3 className="text-lg font-semibold text-[#f5f4f4] mb-3 leading-tight tracking-tight">
-                  New client consultation?
-                </h3>
-                <p className="text-[#d4c4b0] leading-[1.7] text-base">
-                  New clients may be asked to hop on a 10-minute FaceTime or Zoom call so I can see your hair and recommend the right service.
-                </p>
+            {/* Policy 4 */}
+            <details className="rounded-xl bg-[#0B0F13] border border-[#8B5A3C]/20 px-6 py-4 group hover:border-[#8B5A3C]/40 transition-colors reveal-on-scroll">
+              <summary className="font-sans font-bold text-[#F9FAFB] cursor-pointer list-none">
+                <span className="flex items-center justify-between">
+                  <span>What is your late / no-show policy?</span>
+                  <span className="text-lg text-[#14B8A6] group-open:rotate-180 transition-transform">▼</span>
+                </span>
+              </summary>
+              <p className="mt-4 font-sans text-[#9CA3AF] leading-relaxed">
+                There is a 10-minute grace period. After that, your appointment may be shortened or canceled to respect the next guest's time. Deposits may be non-refundable for late arrivals or no-shows.
+              </p>
+            </details>
+
+            {/* Policy 5 */}
+            <details className="rounded-xl bg-[#0B0F13] border border-[#8B5A3C]/20 px-6 py-4 group hover:border-[#8B5A3C]/40 transition-colors reveal-on-scroll">
+              <summary className="font-sans font-bold text-[#F9FAFB] cursor-pointer list-none">
+                <span className="flex items-center justify-between">
+                  <span>How do reschedules or cancellations work?</span>
+                  <span className="text-lg text-[#14B8A6] group-open:rotate-180 transition-transform">▼</span>
+                </span>
+              </summary>
+              <p className="mt-4 font-sans text-[#9CA3AF] leading-relaxed">
+                You may reschedule or cancel up to 24 hours before your appointment. Inside that window, your deposit may be forfeited. Please reach out as soon as possible if something changes.
+              </p>
+            </details>
               </div>
+        </div>
+      </section>
+
+      {/* CONTACT / HOURS SECTION */}
+      <section id="contact" className="py-20 md:py-32 bg-[#0B0F13] text-[#F9FAFB] relative">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <header className="text-center mb-12 reveal-on-scroll">
+            <h2 className="font-serif text-4xl md:text-5xl font-bold text-[#F9FAFB] mb-4">
+              Contact & Hours
+            </h2>
+          </header>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Hours */}
+            <div className="bg-[#050609] rounded-xl border border-[#8B5A3C]/20 p-6 shadow-lg reveal-on-scroll">
+              <div className="h-0.5 w-12 bg-[#14B8A6] mb-6"></div>
+              <h3 className="font-serif text-2xl font-bold text-[#F9FAFB] mb-4">
+                Hours
+                </h3>
+              <p className="font-sans text-[#9CA3AF] mb-2">
+                <strong className="text-[#F9FAFB]">Thursday–Friday</strong>
+              </p>
+              <p className="font-sans text-[#9CA3AF] mb-4">
+                5pm–10pm
+              </p>
+              <p className="font-sans text-[#9CA3AF] mb-2">
+                <strong className="text-[#F9FAFB]">Saturday–Sunday</strong>
+              </p>
+              <p className="font-sans text-[#9CA3AF]">
+                9am–9pm
+              </p>
             </div>
 
-            {/* Promo Line */}
-            <div className="bg-[#2a2520] rounded-xl p-6 text-center border border-[#3d3630] mb-10">
-              <p className="text-[#d4c4b0] mb-2 leading-[1.7] text-base">
-                Leave a review on Google or Yelp and receive $10 off a future service.
+            {/* Location */}
+            <div className="bg-[#050609] rounded-xl border border-[#8B5A3C]/20 p-6 shadow-lg reveal-on-scroll">
+              <div className="h-0.5 w-12 bg-[#14B8A6] mb-6"></div>
+              <h3 className="font-serif text-2xl font-bold text-[#F9FAFB] mb-4">
+                Location
+              </h3>
+              <p className="font-sans text-[#9CA3AF] mb-2">
+                <strong className="text-[#F9FAFB]">RV Twists & Cuts</strong>
               </p>
-              <p className="text-sm text-[#c0a996] leading-relaxed">
-                Review links coming soon.
+              <p className="font-sans text-[#9CA3AF] mb-2">
+                5373 Wilshire Blvd<br />
+                Los Angeles, CA
               </p>
             </div>
 
-            {/* Footer */}
-            <footer className="text-center pt-8 border-t border-[#3d3630]">
-              <div className="mb-6">
-                <p className="text-lg font-semibold text-[#f5f4f4] mb-2">Locs by Nya</p>
-                <p className="text-sm text-[#c0a996] mb-4">Los Angeles, CA</p>
-                <div className="flex justify-center gap-4 mb-6">
-                  <a href="#" className="text-[#c0a996] hover:text-[#a9856c] transition-colors" aria-label="Instagram">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                    </svg>
-                  </a>
-                  <a href="#" className="text-[#c0a996] hover:text-[#a9856c] transition-colors" aria-label="Facebook">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                    </svg>
-                  </a>
+            {/* Contact */}
+            <div className="bg-[#050609] rounded-xl border border-[#8B5A3C]/20 p-6 shadow-lg reveal-on-scroll">
+              <div className="h-0.5 w-12 bg-[#14B8A6] mb-6"></div>
+              <h3 className="font-serif text-2xl font-bold text-[#F9FAFB] mb-4">
+                Contact
+              </h3>
+              <p className="font-sans text-[#9CA3AF] mb-2">
+                <strong className="text-[#F9FAFB]">Phone</strong>
+              </p>
+              <a 
+                href="tel:310-892-4874" 
+                className="font-sans text-[#14B8A6] hover:text-[#11BFD0] transition-colors text-lg"
+              >
+                310-892-4874
+              </a>
+              <p className="font-sans text-sm text-[#9CA3AF]/70 mt-4">
+                Call or text for specific questions
+              </p>
                 </div>
               </div>
-              <p className="text-sm text-[#c0a996] leading-relaxed">
-                © {currentYear} Locs by Nya. All rights reserved.
-              </p>
-            </footer>
+
+          <div className="mt-8 text-center">
+            <p className="font-sans text-[#9CA3AF] mb-4">
+              Street and/or lot parking available at RV Twists & Cuts (5373 Wilshire Blvd). Please arrive a few minutes early for check-in.
+            </p>
+            <button
+              onClick={() => scrollToSection("book")}
+              className="bg-gradient-to-r from-[#4B2B1A] to-[#8B5A3C] text-white rounded-full px-8 py-3 text-sm font-medium font-sans hover:shadow-lg hover:shadow-[#8B5A3C]/30 transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#8B5A3C] focus:ring-offset-2 focus:ring-offset-[#0B0F13]"
+            >
+              Book Your Appointment
+            </button>
+          </div>
           </div>
         </section>
+
+      {/* FOOTER */}
+      <footer className="border-t border-[#0B0F13] bg-[#050609] py-8 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm font-sans text-[#9CA3AF]">
+            <span>© <span id="year"></span> Locs by Nya. All rights reserved.</span>
+            <span className="text-[#9CA3AF]/60">Powered by Intelllx Booking</span>
       </div>
+        </div>
+      </footer>
+
+      {/* FAQ Chat Widget */}
+      <LocsFaqChatWidget />
     </main>
   );
 }
