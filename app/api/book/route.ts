@@ -59,10 +59,12 @@ export async function POST(request: NextRequest) {
     // Format the service name for display
     const serviceNames: { [key: string]: string } = {
       'new-client-consultation': 'New Client Consultation',
-      'starter-locs': 'Starter Locs (Kids or Adults)',
-      'retwist-maintenance': 'Retwist & Maintenance / Style',
-      'loc-takedown': 'Loc Take Down + Detangle',
-      'repair-deep-care': 'Repair / Deep Care / Re-attachment',
+      'kids-starter-locs': 'Kids · Starter Locs (Ages 2–12)',
+      'kids-retwist-style': 'Kids · Retwist + Style',
+      'kids-takedown': 'Kids · Loc Take Down + Detangle',
+      'teens-adults-starter-locs': 'Teens & Adults · Starter Locs (13+)',
+      'teens-adults-retwist': 'Teens & Adults · Retwist & Maintenance',
+      'teens-adults-repair': 'Teens & Adults · Repair / Deep Care',
     };
 
     // Format add-on names for display

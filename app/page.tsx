@@ -594,84 +594,74 @@ export default function Home() {
             <h3 className="font-serif text-3xl md:text-4xl font-bold text-[#F9FAFB] mb-8 text-center md:text-left">
               Teens & Adults <span className="text-[#14B8A6]">(Ages 13 and Older)</span>
             </h3>
-            <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-8 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all">
-              <div className="h-1 w-16 bg-gradient-to-r from-[#4B2B1A] to-[#8B5A3C] mb-4"></div>
-              <div className="h-0.5 w-8 bg-[#14B8A6] mb-6"></div>
-              <h4 className="font-serif text-3xl font-bold text-[#F9FAFB] mb-6">Starter Locs</h4>
-              
-              <div className="space-y-4 mb-6">
-                <div>
-                  <p className="font-sans text-[#14B8A6] font-semibold text-lg mb-2">Short length starting at $165+</p>
-                  <p className="font-sans text-sm text-[#9CA3AF]">For hair approximately 4 inches to ear length.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Starter Locs - Teens & Adults */}
+              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all group">
+                <div className="h-1 w-16 bg-gradient-to-r from-[#4B2B1A] to-[#8B5A3C] mb-4"></div>
+                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
+                <h4 className="font-serif text-2xl font-bold text-[#F9FAFB] mb-3">Starter Locs</h4>
+                <div className="space-y-2 mb-4">
+                  <p className="font-sans text-[#14B8A6] font-semibold">Short length starting at $165+</p>
+                  <p className="font-sans text-xs text-[#9CA3AF]">For hair approximately 4 inches to ear length.</p>
+                  <p className="font-sans text-[#14B8A6] font-semibold">Shoulder length starting at $185+</p>
                 </div>
-                <div>
-                  <p className="font-sans text-[#14B8A6] font-semibold text-lg mb-2">Shoulder length starting at $185+</p>
-                </div>
-              </div>
-
-              <p className="font-sans text-[#9CA3AF] leading-relaxed mb-6">
-                Pricing is influenced by hair density, length beyond shoulder, and loc size selection.
-              </p>
-
-              <div className="space-y-6">
-                <div>
-                  <p className="font-sans text-base font-semibold text-[#F9FAFB] mb-3">Important notes before your appointment:</p>
-                  <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed">
+                <p className="font-sans text-[#9CA3AF] leading-relaxed mb-4 text-sm">
+                  Pricing is influenced by hair density, length beyond shoulder, and loc size selection.
+                </p>
+                <div className="mt-4">
+                  <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Important notes before your appointment:</p>
+                  <p className="font-sans text-xs text-[#9CA3AF] leading-relaxed mb-3">
                     Please come with a preferred loc size reference, either photos or a clear description of the look you are aiming to achieve.
                   </p>
-                </div>
-                <div>
-                  <p className="font-sans text-base font-semibold text-[#F9FAFB] mb-3">Factors that affect final pricing and outcome:</p>
-                  <ul className="space-y-2">
-                    <li className="font-sans text-sm text-[#9CA3AF] flex items-start">
+                  <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Factors that affect final pricing:</p>
+                  <ul className="space-y-1.5">
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Loc width and size preference</span>
                     </li>
-                    <li className="font-sans text-sm text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Parting style selection</span>
                     </li>
-                    <li className="font-sans text-sm text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Full head or half head coverage</span>
                     </li>
-                    <li className="font-sans text-sm text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Hairline and forehead preference</span>
                     </li>
-                    <li className="font-sans text-sm text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Total loc count</span>
                     </li>
                   </ul>
                 </div>
+                <p className="font-sans text-xs text-[#9CA3AF] leading-relaxed mt-4 italic">
+                  This ensures your install reflects your vision and sets your locs up to mature exactly how you want them to.
+                </p>
               </div>
 
-              <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mt-6 italic">
-                This ensures your install reflects your vision and sets your locs up to mature exactly how you want them to.
-              </p>
-            </div>
-
-            {/* Retwist & Maintenance - Adults */}
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Retwist & Maintenance - Adults */}
               <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all">
                 <div className="h-1 w-16 bg-gradient-to-r from-[#4B2B1A] to-[#8B5A3C] mb-4"></div>
                 <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
                 <h4 className="font-serif text-2xl font-bold text-[#F9FAFB] mb-3">Retwist & Maintenance</h4>
-                <p className="font-sans text-[#9CA3AF] leading-relaxed mb-4">
+                <p className="font-sans text-[#14B8A6] font-semibold mb-4">Starting at $135+</p>
+                <p className="font-sans text-[#9CA3AF] leading-relaxed mb-4 text-sm">
                   Clean parts, healthy tension, and scalp care for existing locs. Regular maintenance to keep your locs thriving and looking their best.
                 </p>
-                <p className="font-sans text-[#14B8A6] font-semibold">Starting at $135+</p>
               </div>
 
-              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all">
+              {/* Repair / Deep Care - Adults */}
+              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all md:col-span-2">
                 <div className="h-1 w-16 bg-gradient-to-r from-[#4B2B1A] to-[#8B5A3C] mb-4"></div>
                 <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
                 <h4 className="font-serif text-2xl font-bold text-[#F9FAFB] mb-3">Repair / Deep Care</h4>
-                <p className="font-sans text-[#9CA3AF] leading-relaxed mb-4">
+                <p className="font-sans text-[#14B8A6] font-semibold mb-4">Pricing varies</p>
+                <p className="font-sans text-[#9CA3AF] leading-relaxed text-sm">
                   Strengthening weak spots, repairing breakage, and restoring structure. Specialized care when your locs need extra attention.
                 </p>
-                <p className="font-sans text-[#14B8A6] font-semibold">Pricing varies</p>
               </div>
             </div>
           </div>
@@ -1056,10 +1046,10 @@ export default function Home() {
                 )}
                 </div>
 
-              {/* Service */}
+              {/* Primary Service */}
                 <div>
                 <label htmlFor="service" className="block text-sm font-semibold text-[#F9FAFB] mb-2 font-sans uppercase tracking-wide">
-                  Service
+                  Primary Service
                   </label>
                 <select
                   id="service"
@@ -1073,10 +1063,12 @@ export default function Home() {
                   {isNewClient && (
                     <option value="new-client-consultation">New Client Consultation</option>
                   )}
-                  <option value="starter-locs">Starter Locs (Kids or Adults)</option>
-                  <option value="retwist-maintenance">Retwist & Maintenance / Style</option>
-                  <option value="loc-takedown">Loc Take Down + Detangle</option>
-                  <option value="repair-deep-care">Repair / Deep Care / Re-attachment</option>
+                  <option value="kids-starter-locs">Kids · Starter Locs (Ages 2–12)</option>
+                  <option value="kids-retwist-style">Kids · Retwist + Style</option>
+                  <option value="kids-takedown">Kids · Loc Take Down + Detangle</option>
+                  <option value="teens-adults-starter-locs">Teens & Adults · Starter Locs (13+)</option>
+                  <option value="teens-adults-retwist">Teens & Adults · Retwist & Maintenance</option>
+                  <option value="teens-adults-repair">Teens & Adults · Repair / Deep Care</option>
                 </select>
               </div>
 
@@ -1318,7 +1310,7 @@ export default function Home() {
                   rows={3}
                   value={formData.notes}
                     onChange={handleChange}
-                  placeholder="Share details like length, density, or anything specific about your locs, plus any add-on details (how many locs need repair, color ideas, etc.)."
+                  placeholder="Share any important details (age, hair length, loc condition, how many locs need repair, color ideas, etc.)."
                   className="w-full px-4 py-3 rounded-lg border border-[#8B5A3C]/30 bg-[#050609] text-[#F9FAFB] placeholder-[#9CA3AF]/50 font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/40 focus:border-[#14B8A6] transition-colors resize-none"
                   />
                 </div>
