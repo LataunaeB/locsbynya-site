@@ -29,6 +29,7 @@ export default function Home() {
     phone: "",
     notes: "",
   });
+  const [addOns, setAddOns] = useState<string[]>([]);
   const [depositAgreed, setDepositAgreed] = useState(false);
   const [hairFiles, setHairFiles] = useState<FileList | null>(null);
 
@@ -44,6 +45,14 @@ export default function Home() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       setHairFiles(e.target.files);
+    }
+  };
+
+  const handleAddOnChange = (addOnValue: string, checked: boolean) => {
+    if (checked) {
+      setAddOns([...addOns, addOnValue]);
+    } else {
+      setAddOns(addOns.filter((item) => item !== addOnValue));
     }
   };
 
@@ -70,6 +79,7 @@ export default function Home() {
       formDataToSend.append('phone', formData.phone);
       formDataToSend.append('notes', formData.notes || '');
       formDataToSend.append('hasFiles', hairFiles && hairFiles.length > 0 ? 'true' : 'false');
+      formDataToSend.append('addOns', JSON.stringify(addOns));
 
       // Append all files
       if (hairFiles) {
@@ -96,6 +106,7 @@ export default function Home() {
         phone: "",
           notes: "",
         });
+        setAddOns([]);
         setDepositAgreed(false);
         setHairFiles(null);
       } else {
@@ -665,102 +676,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* EXTENDED SERVICES & CONVENIENCE OPTIONS */}
-          <div className="mb-20 reveal-on-scroll">
-            <h3 className="font-serif text-3xl md:text-4xl font-bold text-[#F9FAFB] mb-4 text-center md:text-left">
-              Extended Services & Convenience Options
-            </h3>
-            <p className="font-sans text-lg text-[#9CA3AF] mb-8 max-w-3xl leading-relaxed">
-              I understand that families, teens, and adults all have different schedules and needs. I offer flexible options designed to support consistency, comfort, and long term loc health.
-            </p>
-            <div className="space-y-6">
-              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 transition-all">
-                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
-                <div className="flex items-center gap-3 mb-4">
-                  <h4 className="font-serif text-2xl font-bold text-[#F9FAFB]">Late Night / Early Morning Service Availability</h4>
-                  <span className="px-3 py-1 rounded-full bg-[#14B8A6]/20 text-[#14B8A6] text-xs font-semibold font-sans">By request only</span>
-                </div>
-                <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mb-4">
-                  I offer limited late night and early morning appointment availability for clients who work nontraditional hours or need flexibility. These appointments are scheduled in advance and are priced based on the service requested, time, and complexity of the style.
-                </p>
-                <div>
-                  <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Please note:</p>
-                  <ul className="space-y-1.5">
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
-                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                      <span>Late night/early morning availability is not walk-in</span>
-                    </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
-                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                      <span>Confirmation is required prior to booking</span>
-                    </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
-                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                      <span>Pricing varies depending on service type and duration</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 transition-all">
-                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
-                <h4 className="font-serif text-2xl font-bold text-[#F9FAFB] mb-4">Free Tours and Consultations</h4>
-                <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mb-4">
-                  I offer free tours and brief consultations for new clients who want to see the space, ask questions, or better understand the loc process before committing. This is especially helpful for parents starting children on their loc journey or for clients beginning their first install.
-                </p>
-                <div>
-                  <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Tours are ideal for:</p>
-                  <ul className="space-y-1.5">
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
-                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                      <span>First time loc clients</span>
-                    </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
-                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                      <span>Parents of younger children</span>
-                    </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
-                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                      <span>Clients transitioning from loose natural hair</span>
-                    </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
-                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                      <span>Clients planning a long term loc journey</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 transition-all">
-                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
-                <div className="flex items-center gap-3 mb-4">
-                  <h4 className="font-serif text-2xl font-bold text-[#F9FAFB]">House Calls</h4>
-                  <span className="px-3 py-1 rounded-full bg-[#14B8A6]/20 text-[#14B8A6] text-xs font-semibold font-sans">Additional $60+ depending on range and accessibility</span>
-                </div>
-                <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mb-4">
-                  I offer house call appointments for clients who need in-home service. This fee is added on top of the selected service and covers travel, setup, and time.
-                </p>
-                <div>
-                  <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Please note:</p>
-                  <ul className="space-y-1.5">
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
-                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                      <span>House calls must be scheduled in advance</span>
-                    </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
-                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                      <span>Location and parking availability may affect booking approval</span>
-                    </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
-                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                      <span>All house calls require confirmation prior to the appointment date</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* ADD-ON TREATMENTS & STYLE UPGRADES */}
           <div className="mb-20 reveal-on-scroll">
             <h3 className="font-serif text-3xl md:text-4xl font-bold text-[#F9FAFB] mb-4 text-center md:text-left">
@@ -875,6 +790,102 @@ export default function Home() {
                     </li>
                   </ul>
                   <p className="font-sans text-xs text-[#14B8A6] font-semibold">Pricing varies by complexity and time.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* EXTENDED SERVICES & CONVENIENCE OPTIONS */}
+          <div className="mb-20 reveal-on-scroll">
+            <h3 className="font-serif text-3xl md:text-4xl font-bold text-[#F9FAFB] mb-4 text-center md:text-left">
+              Extended Services & Convenience Options
+            </h3>
+            <p className="font-sans text-lg text-[#9CA3AF] mb-8 max-w-3xl leading-relaxed">
+              I understand that families, teens, and adults all have different schedules and needs. I offer flexible options designed to support consistency, comfort, and long term loc health.
+            </p>
+            <div className="space-y-6">
+              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 transition-all">
+                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
+                <div className="flex items-center gap-3 mb-4">
+                  <h4 className="font-serif text-2xl font-bold text-[#F9FAFB]">Late Night / Early Morning Service Availability</h4>
+                  <span className="px-3 py-1 rounded-full bg-[#14B8A6]/20 text-[#14B8A6] text-xs font-semibold font-sans">By request only</span>
+                </div>
+                <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mb-4">
+                  I offer limited late night and early morning appointment availability for clients who work nontraditional hours or need flexibility. These appointments are scheduled in advance and are priced based on the service requested, time, and complexity of the style.
+                </p>
+                <div>
+                  <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Please note:</p>
+                  <ul className="space-y-1.5">
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Late night/early morning availability is not walk-in</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Confirmation is required prior to booking</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Pricing varies depending on service type and duration</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 transition-all">
+                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
+                <h4 className="font-serif text-2xl font-bold text-[#F9FAFB] mb-4">Free Tours and Consultations</h4>
+                <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mb-4">
+                  I offer free tours and brief consultations for new clients who want to see the space, ask questions, or better understand the loc process before committing. This is especially helpful for parents starting children on their loc journey or for clients beginning their first install.
+                </p>
+                <div>
+                  <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Tours are ideal for:</p>
+                  <ul className="space-y-1.5">
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>First time loc clients</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Parents of younger children</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Clients transitioning from loose natural hair</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Clients planning a long term loc journey</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 transition-all">
+                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
+                <div className="flex items-center gap-3 mb-4">
+                  <h4 className="font-serif text-2xl font-bold text-[#F9FAFB]">House Calls</h4>
+                  <span className="px-3 py-1 rounded-full bg-[#14B8A6]/20 text-[#14B8A6] text-xs font-semibold font-sans">Additional $60+ depending on range and accessibility</span>
+                </div>
+                <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mb-4">
+                  I offer house call appointments for clients who need in-home service. This fee is added on top of the selected service and covers travel, setup, and time.
+                </p>
+                <div>
+                  <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Please note:</p>
+                  <ul className="space-y-1.5">
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>House calls must be scheduled in advance</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>Location and parking availability may affect booking approval</span>
+                    </li>
+                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
+                      <span>All house calls require confirmation prior to the appointment date</span>
+                    </li>
+                  </ul>
                 </div>
               </div>
             </div>
@@ -1062,10 +1073,10 @@ export default function Home() {
                   {isNewClient && (
                     <option value="new-client-consultation">New Client Consultation</option>
                   )}
-                  <option value="retwist">Retwist & Cleanse</option>
-                  <option value="starter-locs">Starter Locs (Consult + Install)</option>
-                  <option value="maintenance-style">Maintenance & Style</option>
-                  <option value="repair-deep">Repair / Reconstruct</option>
+                  <option value="starter-locs">Starter Locs (Kids or Adults)</option>
+                  <option value="retwist-maintenance">Retwist & Maintenance / Style</option>
+                  <option value="loc-takedown">Loc Take Down + Detangle</option>
+                  <option value="repair-deep-care">Repair / Deep Care / Re-attachment</option>
                 </select>
               </div>
 
@@ -1102,6 +1113,111 @@ export default function Home() {
                   )}
                 </div>
               )}
+
+              {/* Add-ons & Extras */}
+              <div>
+                <label className="block text-sm font-semibold text-[#F9FAFB] mb-3 font-sans uppercase tracking-wide">
+                  Add-ons & Extras <span className="text-xs font-normal normal-case text-[#9CA3AF]">(optional)</span>
+                </label>
+                <div className="space-y-3 p-4 rounded-lg bg-[#050609] border border-[#8B5A3C]/30">
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={addOns.includes('loc-detox')}
+                      onChange={(e) => handleAddOnChange('loc-detox', e.target.checked)}
+                      className="mt-1 w-5 h-5 border border-[#8B5A3C]/30 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#8B5A3C] bg-[#0B0F13]"
+                    />
+                    <div className="flex-1">
+                      <span className="font-sans text-sm text-[#F9FAFB]">Loc Detox</span>
+                      <span className="font-sans text-sm text-[#14B8A6] ml-2">(+$30)</span>
+                    </div>
+                  </label>
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={addOns.includes('loc-oil-treatment')}
+                      onChange={(e) => handleAddOnChange('loc-oil-treatment', e.target.checked)}
+                      className="mt-1 w-5 h-5 border border-[#8B5A3C]/30 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#8B5A3C] bg-[#0B0F13]"
+                    />
+                    <div className="flex-1">
+                      <span className="font-sans text-sm text-[#F9FAFB]">Loc Oil Treatment</span>
+                      <span className="font-sans text-sm text-[#14B8A6] ml-2">(+$25)</span>
+                    </div>
+                  </label>
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={addOns.includes('scalp-treatment')}
+                      onChange={(e) => handleAddOnChange('scalp-treatment', e.target.checked)}
+                      className="mt-1 w-5 h-5 border border-[#8B5A3C]/30 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#8B5A3C] bg-[#0B0F13]"
+                    />
+                    <div className="flex-1">
+                      <span className="font-sans text-sm text-[#F9FAFB]">Scalp Treatment</span>
+                      <span className="font-sans text-sm text-[#14B8A6] ml-2">(+$30)</span>
+                    </div>
+                  </label>
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={addOns.includes('loc-repair')}
+                      onChange={(e) => handleAddOnChange('loc-repair', e.target.checked)}
+                      className="mt-1 w-5 h-5 border border-[#8B5A3C]/30 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#8B5A3C] bg-[#0B0F13]"
+                    />
+                    <div className="flex-1">
+                      <span className="font-sans text-sm text-[#F9FAFB]">Loc Repair / Re-attachment</span>
+                      <span className="font-sans text-sm text-[#14B8A6] ml-2">(+$15 each)</span>
+                    </div>
+                  </label>
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={addOns.includes('style-add-ons')}
+                      onChange={(e) => handleAddOnChange('style-add-ons', e.target.checked)}
+                      className="mt-1 w-5 h-5 border border-[#8B5A3C]/30 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#8B5A3C] bg-[#0B0F13]"
+                    />
+                    <div className="flex-1">
+                      <span className="font-sans text-sm text-[#F9FAFB]">Style Add Ons</span>
+                      <span className="font-sans text-xs text-[#9CA3AF] ml-2">(upstyles, barrel twists, two strand twists, special occasion styles)</span>
+                    </div>
+                  </label>
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={addOns.includes('loc-color')}
+                      onChange={(e) => handleAddOnChange('loc-color', e.target.checked)}
+                      className="mt-1 w-5 h-5 border border-[#8B5A3C]/30 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#8B5A3C] bg-[#0B0F13]"
+                    />
+                    <div className="flex-1">
+                      <span className="font-sans text-sm text-[#F9FAFB]">Loc Color Enhancement</span>
+                      <span className="font-sans text-sm text-[#14B8A6] ml-2">(starting at $40+)</span>
+                    </div>
+                  </label>
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={addOns.includes('house-call')}
+                      onChange={(e) => handleAddOnChange('house-call', e.target.checked)}
+                      className="mt-1 w-5 h-5 border border-[#8B5A3C]/30 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#8B5A3C] bg-[#0B0F13]"
+                    />
+                    <div className="flex-1">
+                      <span className="font-sans text-sm text-[#F9FAFB]">House Call</span>
+                      <span className="font-sans text-sm text-[#14B8A6] ml-2">(+$60+, depending on range and accessibility)</span>
+                    </div>
+                  </label>
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={addOns.includes('late-night-early-morning')}
+                      onChange={(e) => handleAddOnChange('late-night-early-morning', e.target.checked)}
+                      className="mt-1 w-5 h-5 border border-[#8B5A3C]/30 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#8B5A3C] bg-[#0B0F13]"
+                    />
+                    <div className="flex-1">
+                      <span className="font-sans text-sm text-[#F9FAFB]">Late Night / Early Morning Slot</span>
+                      <span className="font-sans text-xs text-[#14B8A6] ml-2">(by request only)</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
 
               {/* Date and Time Window - Inline */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1202,7 +1318,7 @@ export default function Home() {
                   rows={3}
                   value={formData.notes}
                     onChange={handleChange}
-                  placeholder="Tell Nya about your locs, your hair history, or what you're looking for."
+                  placeholder="Share details like length, density, or anything specific about your locs, plus any add-on details (how many locs need repair, color ideas, etc.)."
                   className="w-full px-4 py-3 rounded-lg border border-[#8B5A3C]/30 bg-[#050609] text-[#F9FAFB] placeholder-[#9CA3AF]/50 font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/40 focus:border-[#14B8A6] transition-colors resize-none"
                   />
                 </div>
