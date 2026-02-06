@@ -62,6 +62,16 @@ export default function Home() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const paymentStatus = urlParams.get("payment");
+    const testMode = urlParams.get("test");
+    
+    // Test mode: allows testing form without actual Stripe payment
+    if (testMode === "payment") {
+      setDepositPaid(true);
+      localStorage.setItem("depositPaid", "true");
+      // Remove test parameter from URL
+      window.history.replaceState({}, "", window.location.pathname);
+      return;
+    }
     
     if (paymentStatus === "success") {
       setDepositPaid(true);
