@@ -1,0 +1,39 @@
+VERCEL ENVIRONMENT VARIABLES SETUP
+===================================
+
+Copy and paste these exact values into your Vercel project settings:
+
+1. Go to: https://vercel.com/dashboard
+2. Select your project: locsbynya-site
+3. Go to: Settings → Environment Variables
+4. Add these three variables (select Production, Preview, and Development for each):
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+VARIABLE NAME: FROM_EMAIL
+VALUE: locsbynya@locsbynya.com
+ENVIRONMENTS: ☑ Production  ☑ Preview  ☑ Development
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+VARIABLE NAME: NYA_EMAIL
+VALUE: locsbynya@locsbynya.com
+ENVIRONMENTS: ☑ Production  ☑ Preview  ☑ Development
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+VARIABLE NAME: RESEND_API_KEY
+VALUE: (already set - verify it exists)
+ENVIRONMENTS: ☑ Production  ☑ Preview  ☑ Development
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+IMPORTANT:
+- After adding/updating variables, you MUST redeploy for changes to take effect
+- Go to Deployments → Latest deployment → ⋯ → Redeploy
+
+WHAT THESE DO:
+- FROM_EMAIL: The "from" address for all booking emails (client confirmations)
+- NYA_EMAIL: The "to" address for booking notifications sent to the stylist
+- RESEND_API_KEY: Your Resend API key (already configured)
+

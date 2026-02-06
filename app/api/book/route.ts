@@ -45,9 +45,25 @@ export async function POST(request: Request) {
       day: "numeric",
     });
 
-    // Get business owner email from env or use default
-    const businessEmail = process.env.NYA_EMAIL || process.env.FROM_EMAIL || "booking@locsbynya.com";
-    const fromEmail = process.env.FROM_EMAIL || "onboarding@resend.dev";
+    // Get email addresses from environment variables (required)
+    const fromEmail = process.env.FROM_EMAIL;
+    const businessEmail = process.env.NYA_EMAIL;
+
+    if (!fromEmail) {
+      console.error("FROM_EMAIL environment variable is not set");
+      return NextResponse.json(
+        { error: "Server configuration error: FROM_EMAIL not configured" },
+        { status: 500 }
+      );
+    }
+
+    if (!businessEmail) {
+      console.error("NYA_EMAIL environment variable is not set");
+      return NextResponse.json(
+        { error: "Server configuration error: NYA_EMAIL not configured" },
+        { status: 500 }
+      );
+    }
 
     // Send confirmation email to client
     const clientEmailResult = await resend.emails.send({
