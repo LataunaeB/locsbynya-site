@@ -1,7 +1,10 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import LocsFaqChatWidget from "@/components/LocsFaqChatWidget";
+
+// TODO: Replace with actual Stripe payment link when received
+const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/placeholder-link";
 
 interface BookingFormData {
   name: string;
@@ -31,6 +34,7 @@ export default function Home() {
     type: "success" | "error" | null;
     message: string;
   }>({ type: null, message: "" });
+  const [depositPaid, setDepositPaid] = useState(false);
 
   // Generate available time slots
   const generateTimeSlots = () => {
@@ -52,6 +56,46 @@ export default function Home() {
     return today.toISOString().split("T")[0];
   };
 
+  // Check for Stripe payment success redirect and restore form data
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentStatus = urlParams.get("payment");
+    
+    if (paymentStatus === "success") {
+      setDepositPaid(true);
+      // Store in localStorage to persist across page refreshes
+      localStorage.setItem("depositPaid", "true");
+      
+      // Restore form data if it was saved before redirect
+      const savedFormData = localStorage.getItem("bookingFormData");
+      if (savedFormData) {
+        try {
+          const parsed = JSON.parse(savedFormData);
+          setFormData(parsed);
+        } catch (e) {
+          console.error("Error restoring form data:", e);
+        }
+      }
+      
+      // Remove payment parameter from URL
+      window.history.replaceState({}, "", window.location.pathname);
+    } else {
+      // Check localStorage for existing payment status
+      const storedPayment = localStorage.getItem("depositPaid");
+      if (storedPayment === "true") {
+        setDepositPaid(true);
+      }
+    }
+  }, []);
+
+  // Handle Stripe payment link click
+  const handleDepositPayment = () => {
+    // Store current form data in localStorage before redirecting
+    localStorage.setItem("bookingFormData", JSON.stringify(formData));
+    // Redirect to Stripe payment link (same window)
+    window.location.href = STRIPE_PAYMENT_LINK;
+  };
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
@@ -68,6 +112,16 @@ export default function Home() {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus({ type: null, message: "" });
+
+    // Check if deposit is paid
+    if (!depositPaid) {
+      setSubmitStatus({
+        type: "error",
+        message: "Please complete the $25 security deposit payment before submitting your booking.",
+      });
+      setIsSubmitting(false);
+      return;
+    }
 
     // Client-side validation
     if (!formData.name || !formData.email || !formData.phone || !formData.service || !formData.date || !formData.time) {
@@ -111,7 +165,7 @@ export default function Home() {
         message: "Booking submitted successfully! Check your email for confirmation.",
       });
 
-      // Reset form
+      // Reset form and payment status
       setFormData({
         name: "",
         email: "",
@@ -122,6 +176,9 @@ export default function Home() {
         notes: "",
         isNewClient: false,
       });
+      setDepositPaid(false);
+      localStorage.removeItem("depositPaid");
+      localStorage.removeItem("bookingFormData");
     } catch (error) {
       setSubmitStatus({
         type: "error",
@@ -301,6 +358,41 @@ export default function Home() {
                 />
               </div>
 
+              {/* Deposit Payment Section */}
+              <div className="border-t border-[#8B5A3C]/20 pt-6 mt-6">
+                <div className="bg-[#050609] rounded-2xl p-6 border border-[#8B5A3C]/30">
+                  <h3 className="text-lg font-semibold text-[#F9FAFB] mb-2 font-sans">
+                    Security Deposit Required
+                  </h3>
+                  <p className="text-sm text-[#9CA3AF] mb-4 font-sans">
+                    A $25 security deposit is required to secure your appointment. This deposit goes toward your total service cost.
+                  </p>
+                  
+                  {depositPaid ? (
+                    <div className="bg-[#14B8A6]/20 border border-[#14B8A6]/40 rounded-xl p-4 flex items-center gap-3">
+                      <svg className="w-6 h-6 text-[#14B8A6] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <div>
+                        <p className="text-[#14B8A6] font-semibold font-sans">Payment Verified</p>
+                        <p className="text-xs text-[#14B8A6]/80 font-sans">Your $25 deposit has been confirmed.</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleDepositPayment}
+                      className="w-full bg-gradient-to-br from-[#8B5A3C] to-[#6B4528] text-white rounded-xl px-6 py-3.5 font-medium font-sans hover:from-[#9B6A4C] hover:to-[#7B5538] transition-all duration-300 shadow-lg hover:shadow-[0_8px_24px_rgba(139,90,60,0.4)] hover:scale-[1.02] border border-[#8B5A3C]/30 flex items-center justify-center gap-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                      </svg>
+                      Pay $25 Security Deposit
+                    </button>
+                  )}
+                </div>
+              </div>
+
               {/* Status Message */}
               {submitStatus.type && (
                 <div
@@ -317,10 +409,10 @@ export default function Home() {
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !depositPaid}
                 className="w-full bg-gradient-to-br from-[#14B8A6] to-[#0FA1B2] text-white rounded-2xl px-6 py-4 font-medium font-sans hover:from-[#11BFD0] hover:to-[#14B8A6] transition-all duration-300 shadow-lg hover:shadow-[0_8px_24px_rgba(20,184,166,0.4)] hover:scale-[1.02] border border-[#14B8A6]/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
-                {isSubmitting ? "Submitting..." : "Book Appointment"}
+                {isSubmitting ? "Submitting..." : depositPaid ? "Book Appointment" : "Complete Deposit to Book"}
               </button>
 
               <p className="text-xs text-[#9CA3AF] text-center font-sans">
