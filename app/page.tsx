@@ -4,6 +4,8 @@ import { useState, FormEvent, useEffect } from "react";
 import LocsFaqChatWidget from "@/components/LocsFaqChatWidget";
 
 // TODO: Replace with actual Stripe payment link when received
+// IMPORTANT: Configure Stripe payment link to redirect to: https://www.locsbynya.com?payment=success
+// This allows the form to detect successful payment completion
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/placeholder-link";
 
 interface BookingFormData {
