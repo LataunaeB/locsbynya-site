@@ -2,6 +2,7 @@
 
 import { useState, useEffect, FormEvent, useRef } from "react";
 import Image from "next/image";
+import LocsFaqChatWidget from "@/components/LocsFaqChatWidget";
 
 export default function Home() {
   const [formData, setFormData] = useState({
@@ -795,6 +796,8 @@ export default function Home() {
           </div>
         </section>
       </div>
+      <LocsFaqChatWidget />
     </main>
   );
 }
+      <LocsFaqChatWidget />
