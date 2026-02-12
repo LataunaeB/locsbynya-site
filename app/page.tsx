@@ -60,19 +60,12 @@ export default function Home() {
 
   // Check for Stripe payment success redirect and restore form data
   useEffect(() => {
-    // First, always clear localStorage to remove any old test mode data
-    localStorage.removeItem("depositPaid");
-    localStorage.removeItem("bookingFormData");
-    setDepositPaid(false);
-    
-    // Then check for valid Stripe payment success
     const urlParams = new URLSearchParams(window.location.search);
     const paymentStatus = urlParams.get("payment");
     
-    // Only set payment as paid if we have explicit payment=success from Stripe
+    // Only set payment as paid if we have explicit payment=success from Stripe redirect
     if (paymentStatus === "success") {
       setDepositPaid(true);
-      localStorage.setItem("depositPaid", "true");
       
       // Restore form data if it was saved before redirect
       const savedFormData = localStorage.getItem("bookingFormData");
@@ -80,6 +73,7 @@ export default function Home() {
         try {
           const parsed = JSON.parse(savedFormData);
           setFormData(parsed);
+          localStorage.removeItem("bookingFormData");
         } catch (e) {
           console.error("Error restoring form data:", e);
         }
@@ -88,6 +82,7 @@ export default function Home() {
       // Remove payment parameter from URL
       window.history.replaceState({}, "", window.location.pathname);
     }
+    // Always start with depositPaid = false unless payment=success is in URL
   }, []);
 
   // Handle Stripe payment link click
@@ -179,7 +174,6 @@ export default function Home() {
         isNewClient: false,
       });
       setDepositPaid(false);
-      localStorage.removeItem("depositPaid");
       localStorage.removeItem("bookingFormData");
     } catch (error) {
       setSubmitStatus({
