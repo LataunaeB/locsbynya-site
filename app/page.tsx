@@ -2,11 +2,6 @@
 
 import { useState, useEffect, FormEvent, useRef } from "react";
 import Image from "next/image";
-import LocsFaqChatWidget from "@/components/LocsFaqChatWidget";
-
-// TODO: Replace with actual Stripe payment link when received
-// IMPORTANT: Configure Stripe payment link to redirect to: https://www.locsbynya.com?payment=success
-const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/placeholder-link";
 
 export default function Home() {
   const [formData, setFormData] = useState({
@@ -23,9 +18,6 @@ export default function Home() {
   const [animatedText, setAnimatedText] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [depositPaid, setDepositPaid] = useState(false);
-  const [submitError, setSubmitError] = useState("");
   const phrases = ["Strong Roots.", "Clean Parts.", "Healthy Locs."];
   
   // Refs for scroll animations
@@ -85,61 +77,24 @@ export default function Home() {
     });
   };
 
-  // Check for Stripe payment success redirect
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const paymentStatus = urlParams.get("payment");
-    
-    if (paymentStatus === "success") {
-      setDepositPaid(true);
-      const savedFormData = localStorage.getItem("bookingFormData");
-      if (savedFormData) {
-        try {
-          const parsed = JSON.parse(savedFormData);
-          setFormData(parsed);
-          localStorage.removeItem("bookingFormData");
-        } catch (e) {
-          console.error("Error restoring form data:", e);
-        }
-      }
-      window.history.replaceState({}, "", window.location.pathname);
-    }
-  }, []);
-
-  const handleDepositPayment = () => {
-    localStorage.setItem("bookingFormData", JSON.stringify(formData));
-    window.location.href = STRIPE_PAYMENT_LINK;
-  };
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setSubmitError("");
-
-    // Check if deposit is paid
-    if (!depositPaid) {
-      setSubmitError("Please complete the $25 security deposit payment before submitting your booking.");
-      setIsSubmitting(false);
-      return;
-    }
-
+    
     // Validate required fields
     if (!formData.name || !formData.email || !formData.phone || !formData.clientType || !formData.service || !formData.preferredTimes) {
-      setSubmitError("Please fill in all required fields.");
-      setIsSubmitting(false);
+      alert("Please fill in all required fields.");
       return;
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      setSubmitError("Please enter a valid email address.");
-      setIsSubmitting(false);
+      alert("Please enter a valid email address.");
       return;
     }
 
     try {
-      // Map old form fields to new API format
+      // Map form fields to API format
       const bookingData = {
         name: formData.name,
         email: formData.email,
@@ -165,28 +120,25 @@ export default function Home() {
         throw new Error(data.error || "Failed to submit booking");
       }
 
-      // Success
+      // Show success state
       setShowSuccess(true);
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        clientType: "",
-        service: "",
-        preferredTimes: "",
-        hairNotes: "",
-        depositAgreed: false,
-      });
-      setDepositPaid(false);
-      localStorage.removeItem("bookingFormData");
       
+      // Reset form after showing success
       setTimeout(() => {
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          clientType: "",
+          service: "",
+          preferredTimes: "",
+          hairNotes: "",
+          depositAgreed: false,
+        });
         setShowSuccess(false);
       }, 5000);
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "An error occurred. Please try again or call 310-892-4874.");
-    } finally {
-      setIsSubmitting(false);
+      alert(error instanceof Error ? error.message : "An error occurred. Please try again or call 310-892-4874.");
     }
   };
 
@@ -541,14 +493,12 @@ export default function Home() {
               {/* Form Progress Indicator */}
               <div className="mb-8">
                 {(() => {
-                  const requiredFields = ['name', 'email', 'phone', 'clientType', 'service', 'preferredTimes'];
+                  const requiredFields = ['name', 'email', 'phone', 'clientType', 'service', 'preferredTimes', 'depositAgreed'];
                   const completedFields = requiredFields.filter(field => {
+                    if (field === 'depositAgreed') return formData.depositAgreed;
                     return formData[field as keyof typeof formData] !== '';
                   }).length;
-                  // Add deposit to completion if paid
-                  const totalFields = requiredFields.length + 1;
-                  const totalCompleted = completedFields + (depositPaid ? 1 : 0);
-                  const completionPercentage = Math.round((totalCompleted / totalFields) * 100);
+                  const completionPercentage = Math.round((completedFields / requiredFields.length) * 100);
                   
                   return (
                     <>
@@ -722,56 +672,34 @@ export default function Home() {
                   />
                 </div>
 
-                {/* Deposit Payment Section */}
-                <div className="border-t border-[#3d3630] pt-6">
-                  <div className="bg-[#1a1816] rounded-lg p-6 border border-[#3d3630]">
-                    <h3 className="text-lg font-semibold text-[#f5f4f4] mb-2">
-                      Security Deposit Required
-                    </h3>
-                    <p className="text-sm text-[#d4c4b0] mb-4 leading-[1.7]">
-                      A $25 security deposit is required to secure your appointment. This deposit goes toward your total service cost.
-                    </p>
-                    
-                    {depositPaid ? (
-                      <div className="bg-[#a9856c]/20 border border-[#a9856c]/40 rounded-lg p-4 flex items-center gap-3">
-                        <svg className="w-6 h-6 text-[#a9856c] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <div>
-                          <p className="text-[#a9856c] font-semibold">Payment Verified</p>
-                          <p className="text-xs text-[#a9856c]/80">Your $25 deposit has been confirmed.</p>
-                        </div>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handleDepositPayment}
-                        className="w-full bg-[#a9856c] hover:bg-[#836350] text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg hover:scale-[1.02] flex items-center justify-center gap-2"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                        </svg>
-                        Pay $25 Security Deposit
-                      </button>
-                    )}
-                  </div>
+                {/* Deposit Checkbox */}
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="depositAgreed"
+                    name="depositAgreed"
+                    required
+                    checked={formData.depositAgreed}
+                    onChange={handleChange}
+                    className="mt-1 w-5 h-5 border border-[#3d3630] rounded focus:ring-2 focus:ring-[#a9856c] text-[#a9856c] bg-[#1a1816]"
+                  />
+                  <label htmlFor="depositAgreed" className="text-sm text-[#d4c4b0] leading-[1.7]">
+                    I understand a $25 non-refundable security deposit is required to secure my appointment.
+                  </label>
                 </div>
-
-                {/* Error Message */}
-                {submitError && (
-                  <div className="bg-red-500/20 border border-red-500/40 rounded-lg p-4 text-red-400 text-sm">
-                    {submitError}
-                  </div>
-                )}
 
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={isSubmitting || !depositPaid}
-                  className="w-full bg-[#a9856c] hover:bg-[#836350] text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="w-full bg-[#a9856c] hover:bg-[#836350] text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg hover:scale-[1.02]"
                 >
-                  {isSubmitting ? "Submitting..." : depositPaid ? "Request Booking" : "Complete Deposit to Book"}
+                  Request Booking
                 </button>
+
+                {/* Note under button */}
+                <p className="text-xs text-center text-[#c0a996] leading-[1.6]">
+                  You will not be charged automatically. I personally confirm all appointments and send your $25 deposit link via text or email.
+                </p>
               </form>
               )}
             </div>
@@ -867,9 +795,6 @@ export default function Home() {
           </div>
         </section>
       </div>
-
-      {/* FAQ Chat Widget */}
-      <LocsFaqChatWidget />
     </main>
   );
 }
