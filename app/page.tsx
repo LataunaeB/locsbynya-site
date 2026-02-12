@@ -63,9 +63,9 @@ export default function Home() {
     const urlParams = new URLSearchParams(window.location.search);
     const paymentStatus = urlParams.get("payment");
     
+    // Always clear localStorage on page load unless we have a valid payment success
     if (paymentStatus === "success") {
       setDepositPaid(true);
-      // Store in localStorage to persist across page refreshes
       localStorage.setItem("depositPaid", "true");
       
       // Restore form data if it was saved before redirect
@@ -82,18 +82,10 @@ export default function Home() {
       // Remove payment parameter from URL
       window.history.replaceState({}, "", window.location.pathname);
     } else {
-      // Check localStorage for existing payment status
-      // Only trust payment status if it came from a real Stripe redirect
-      // Clear any test mode data that might be lingering
-      const storedPayment = localStorage.getItem("depositPaid");
-      // Only restore if we have a valid payment source (not from test mode)
-      // For now, clear any existing payment status to ensure clean state
-      if (storedPayment === "true") {
-        // Only restore if URL indicates it came from payment success
-        // Otherwise clear it to prevent test mode persistence
-        localStorage.removeItem("depositPaid");
-        localStorage.removeItem("bookingFormData");
-      }
+      // Clear any existing payment status - only valid if from Stripe redirect
+      localStorage.removeItem("depositPaid");
+      localStorage.removeItem("bookingFormData");
+      setDepositPaid(false);
     }
   }, []);
 
