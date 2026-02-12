@@ -867,6 +867,9 @@ export default function Home() {
           </div>
         </section>
       </div>
+
+      {/* FAQ Chat Widget */}
+      <LocsFaqChatWidget />
     </main>
   );
 }
