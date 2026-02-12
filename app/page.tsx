@@ -2,7 +2,6 @@
 
 import { useState, useEffect, FormEvent, useRef } from "react";
 import Image from "next/image";
-import LocsFaqChatWidget from "@/components/LocsFaqChatWidget";
 
 export default function Home() {
   const [formData, setFormData] = useState({
@@ -78,69 +77,27 @@ export default function Home() {
     });
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     
-    // Validate required fields
-    if (!formData.name || !formData.email || !formData.phone || !formData.clientType || !formData.service || !formData.preferredTimes) {
-      alert("Please fill in all required fields.");
-      return;
-    }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      alert("Please enter a valid email address.");
-      return;
-    }
-
-    try {
-      // Map form fields to API format
-      const bookingData = {
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        service: formData.service,
-        date: "", // Old form doesn't have date picker
-        time: formData.preferredTimes,
-        notes: formData.hairNotes + (formData.clientType ? `\nClient Type: ${formData.clientType}` : ""),
-        isNewClient: formData.clientType === "new",
-      };
-
-      const response = await fetch("/api/book", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(bookingData),
+    // TODO: Wire real email backend here (e.g., SendGrid, Resend, or API route)
+    // Show success state
+    setShowSuccess(true);
+    
+    // Reset form after showing success
+    setTimeout(() => {
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        clientType: "",
+        service: "",
+        preferredTimes: "",
+        hairNotes: "",
+        depositAgreed: false,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to submit booking");
-      }
-
-      // Show success state
-      setShowSuccess(true);
-      
-      // Reset form after showing success
-      setTimeout(() => {
-        setFormData({
-          name: "",
-          email: "",
-          phone: "",
-          clientType: "",
-          service: "",
-          preferredTimes: "",
-          hairNotes: "",
-          depositAgreed: false,
-        });
-        setShowSuccess(false);
-      }, 5000);
-    } catch (error) {
-      alert(error instanceof Error ? error.message : "An error occurred. Please try again or call 310-892-4874.");
-    }
+      setShowSuccess(false);
+    }, 5000);
   };
 
   const scrollToSection = (id: string) => {
@@ -796,9 +753,6 @@ export default function Home() {
           </div>
         </section>
       </div>
-
-      {/* FAQ Chat Widget */}
-      <LocsFaqChatWidget />
     </main>
   );
 }
