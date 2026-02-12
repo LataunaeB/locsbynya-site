@@ -557,3 +557,4 @@ The system is designed to reduce manual work (no need to manually send confirmat
 
 **End of Architecture Walkthrough**
 
+

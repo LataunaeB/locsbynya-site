@@ -37,3 +37,4 @@ WHAT THESE DO:
 - NYA_EMAIL: The "to" address for booking notifications sent to the stylist
 - RESEND_API_KEY: Your Resend API key (already configured)
 
+
