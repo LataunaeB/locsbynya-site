@@ -2,15 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
 const apiKey = process.env.RESEND_API_KEY?.trim();
+const fromEmail = process.env.FROM_EMAIL?.trim();
+
 if (!apiKey) {
   console.error('RESEND_API_KEY is not set');
+}
+if (!fromEmail) {
+  console.error('FROM_EMAIL is not set');
 }
 
 const resend = apiKey ? new Resend(apiKey) : null;
 
 export async function POST(request: NextRequest) {
   try {
-    if (!resend) {
+    if (!resend || !fromEmail) {
       return NextResponse.json(
         { message: 'Email service is not configured. Please contact support.' },
         { status: 500 }
@@ -199,7 +204,7 @@ export async function POST(request: NextRequest) {
 
     // Send email to client (no attachments)
     await resend.emails.send({
-      from: 'Locs by Nya <locsbynya@locsbynya.com>',
+      from: fromEmail,
       to: email,
       subject: 'Appointment Confirmed - Locs by Nya',
       html: clientEmailHtml,
@@ -207,7 +212,7 @@ export async function POST(request: NextRequest) {
 
     // Send notification email to Nya (with file attachments if any)
     await resend.emails.send({
-      from: 'Locs by Nya <locsbynya@locsbynya.com>',
+      from: fromEmail,
       to: 'locsbynya@locsbynya.com',
       subject: `New Appointment Confirmed: ${name} - ${serviceName}`,
       html: nyaEmailHtml,
