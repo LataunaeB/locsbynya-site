@@ -17,6 +17,15 @@ import { FormEvent, useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import LocsFaqChatWidget from "@/components/LocsFaqChatWidget";
 
+const galleryImages = [
+  { src: "/images/teen-locs.png", alt: "Teen locs by Nya", caption: "Teen locs" },
+  { src: "/images/Kid locs.png", alt: "Kids locs by Nya", caption: "Kids locs" },
+  { src: "/images/Barrell locs.PNG", alt: "Barrel locs style", caption: "Barrel locs" },
+  { src: "/images/barrell locs2.png", alt: "Barrel locs close-up", caption: "Barrel locs" },
+  { src: "/images/shoulder locs.png", alt: "Shoulder length locs", caption: "Shoulder length locs" },
+  { src: "/images/Longest locs (no bg).PNG", alt: "Long mature locs", caption: "Long mature locs" },
+];
+
 export default function Home() {
   const [showPromoBar, setShowPromoBar] = useState(true);
   const [formData, setFormData] = useState({
@@ -433,30 +442,30 @@ export default function Home() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {/* Starter Locs - Kids */}
-              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all group">
-                <div className="h-1 w-16 bg-gradient-to-r from-[#4B2B1A] to-[#8B5A3C] mb-4"></div>
+              <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 p-6 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/20 transition-all group">
+                <div className="h-1 w-16 bg-gradient-to-r from-[#14B8A6] to-[#0FA1B2] mb-4"></div>
                 <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
-                <h4 className="font-serif text-2xl font-bold text-[#F9FAFB] mb-3">Starter Locs</h4>
+                <h4 className="font-serif text-2xl font-bold text-[#0B0F13] mb-3">Starter Locs</h4>
                 <p className="font-sans text-[#14B8A6] font-semibold mb-4">Starting at $165+</p>
-                <p className="font-sans text-[#9CA3AF] leading-relaxed mb-4 text-sm">
+                <p className="font-sans text-[#4B5563] leading-relaxed mb-4 text-sm">
                   This service establishes a strong and healthy loc foundation for your child. Pricing varies based on hair texture, density, length, desired loc size, and total loc count.
                 </p>
                 <div className="mt-4">
-                  <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Pricing considerations:</p>
+                  <p className="font-sans text-sm font-semibold text-[#0B0F13] mb-2">Pricing considerations:</p>
                   <ul className="space-y-1.5">
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Hair length and thickness</span>
                     </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Desired loc size (small, medium, or large)</span>
                     </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Total number of locs</span>
                     </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Full head versus half head installation</span>
                     </li>
@@ -465,37 +474,37 @@ export default function Home() {
               </div>
 
               {/* Retwist + Style - Kids */}
-              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all group">
-                <div className="h-1 w-16 bg-gradient-to-r from-[#4B2B1A] to-[#8B5A3C] mb-4"></div>
+              <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 p-6 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/20 transition-all group">
+                <div className="h-1 w-16 bg-gradient-to-r from-[#14B8A6] to-[#0FA1B2] mb-4"></div>
                 <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
-                <h4 className="font-serif text-2xl font-bold text-[#F9FAFB] mb-3">Retwist + Style</h4>
+                <h4 className="font-serif text-2xl font-bold text-[#0B0F13] mb-3">Retwist + Style</h4>
                 <p className="font-sans text-[#14B8A6] font-semibold mb-4">Starting at $135+</p>
-                <p className="font-sans text-[#9CA3AF] leading-relaxed mb-4 text-sm">
+                <p className="font-sans text-[#4B5563] leading-relaxed mb-4 text-sm">
                   This service refreshes the roots and finishes with an age-appropriate, protective style. It is ideal for maintaining starter locs or mature locs on children.
                 </p>
                 <div className="mt-4 space-y-4">
                   <div>
-                    <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">What to know:</p>
-                    <p className="font-sans text-xs text-[#9CA3AF] leading-relaxed">
+                    <p className="font-sans text-sm font-semibold text-[#0B0F13] mb-2">What to know:</p>
+                    <p className="font-sans text-xs text-[#4B5563] leading-relaxed">
                       I prefer that you arrive with a reference photo or clear idea of the style you are requesting so expectations and timing are aligned.
                     </p>
                   </div>
                   <div>
-                    <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Style options may include:</p>
+                    <p className="font-sans text-sm font-semibold text-[#0B0F13] mb-2">Style options may include:</p>
                     <ul className="space-y-1.5">
-                      <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <li className="font-sans text-xs text-[#4B5563] flex items-start">
                         <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                         <span>Two strand twist styles</span>
                       </li>
-                      <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <li className="font-sans text-xs text-[#4B5563] flex items-start">
                         <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                         <span>Barrel twists</span>
                       </li>
-                      <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <li className="font-sans text-xs text-[#4B5563] flex items-start">
                         <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                         <span>Simple updos or ponytail styles</span>
                       </li>
-                      <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <li className="font-sans text-xs text-[#4B5563] flex items-start">
                         <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                         <span>Protective braided or twisted loc styles suitable for children</span>
                       </li>
@@ -505,26 +514,26 @@ export default function Home() {
               </div>
 
               {/* Loc Take Down + Detangle - Kids */}
-              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all group">
-                <div className="h-1 w-16 bg-gradient-to-r from-[#4B2B1A] to-[#8B5A3C] mb-4"></div>
+              <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 p-6 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/20 transition-all group">
+                <div className="h-1 w-16 bg-gradient-to-r from-[#14B8A6] to-[#0FA1B2] mb-4"></div>
                 <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
-                <h4 className="font-serif text-2xl font-bold text-[#F9FAFB] mb-3">Loc Take Down + Detangle</h4>
+                <h4 className="font-serif text-2xl font-bold text-[#0B0F13] mb-3">Loc Take Down + Detangle</h4>
                 <p className="font-sans text-[#14B8A6] font-semibold mb-4">Starting at $120+ for shoulder length</p>
-                <p className="font-sans text-[#9CA3AF] leading-relaxed mb-4 text-sm">
+                <p className="font-sans text-[#4B5563] leading-relaxed mb-4 text-sm">
                   This service involves carefully removing locs and detangling the hair using moisture and gentle techniques to preserve hair integrity. Final pricing depends on hair length, how long the locs have been installed, and the level of locking or matting present.
                 </p>
                 <div className="mt-4">
-                  <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Best for:</p>
+                  <p className="font-sans text-sm font-semibold text-[#0B0F13] mb-2">Best for:</p>
                   <ul className="space-y-1.5">
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Children restarting their loc journey</span>
                     </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Temporary loc installations</span>
                     </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Partially locked or early stage matting</span>
                     </li>
@@ -537,48 +546,48 @@ export default function Home() {
             <div className="mt-8">
               <p className="font-sans text-lg font-semibold text-[#F9FAFB] mb-6 text-center md:text-left">Add-On Services for Kids</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 transition-all">
+                <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 p-6 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/20 transition-all">
                   <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
-                  <h4 className="font-serif text-xl font-bold text-[#F9FAFB] mb-3">Loc Detox</h4>
-                  <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mb-4">
+                  <h4 className="font-serif text-xl font-bold text-[#0B0F13] mb-3">Loc Detox</h4>
+                  <p className="font-sans text-sm text-[#4B5563] leading-relaxed mb-4">
                     A loc detox is a deep cleansing treatment that removes product buildup, lint, sweat residue, and environmental debris trapped within the locs. I use a clarifying process that may include baking soda, followed by a moisturizing reset to maintain softness and scalp comfort.
                   </p>
                   <div>
-                    <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Recommended when:</p>
+                    <p className="font-sans text-sm font-semibold text-[#0B0F13] mb-2">Recommended when:</p>
                     <ul className="space-y-1.5">
-                      <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <li className="font-sans text-xs text-[#4B5563] flex items-start">
                         <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                         <span>Locs feel heavy or dull</span>
                       </li>
-                      <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <li className="font-sans text-xs text-[#4B5563] flex items-start">
                         <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                         <span>Visible buildup is present</span>
                       </li>
-                      <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <li className="font-sans text-xs text-[#4B5563] flex items-start">
                         <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                         <span>Your child swims frequently or uses multiple products</span>
                       </li>
                     </ul>
                   </div>
                 </div>
-                <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 transition-all">
+                <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 p-6 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/20 transition-all">
                   <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
-                  <h4 className="font-serif text-xl font-bold text-[#F9FAFB] mb-3">Scalp or Oil Treatment</h4>
-                  <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mb-4">
+                  <h4 className="font-serif text-xl font-bold text-[#0B0F13] mb-3">Scalp or Oil Treatment</h4>
+                  <p className="font-sans text-sm text-[#4B5563] leading-relaxed mb-4">
                     This treatment targets dryness, itchiness, and scalp irritation. I apply a focused scalp routine followed by a light oil seal when appropriate to restore balance and comfort.
                   </p>
                   <div>
-                    <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Recommended when:</p>
+                    <p className="font-sans text-sm font-semibold text-[#0B0F13] mb-2">Recommended when:</p>
                     <ul className="space-y-1.5">
-                      <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <li className="font-sans text-xs text-[#4B5563] flex items-start">
                         <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                         <span>The scalp appears dry or flaky</span>
                       </li>
-                      <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <li className="font-sans text-xs text-[#4B5563] flex items-start">
                         <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                         <span>There is itchiness or tightness</span>
                       </li>
-                      <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                      <li className="font-sans text-xs text-[#4B5563] flex items-start">
                         <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                         <span>Additional moisture support is needed between visits</span>
                       </li>
@@ -596,70 +605,70 @@ export default function Home() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Starter Locs - Teens & Adults */}
-              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all group">
-                <div className="h-1 w-16 bg-gradient-to-r from-[#4B2B1A] to-[#8B5A3C] mb-4"></div>
+              <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 p-6 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/20 transition-all group">
+                <div className="h-1 w-16 bg-gradient-to-r from-[#14B8A6] to-[#0FA1B2] mb-4"></div>
                 <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
-                <h4 className="font-serif text-2xl font-bold text-[#F9FAFB] mb-3">Starter Locs</h4>
+                <h4 className="font-serif text-2xl font-bold text-[#0B0F13] mb-3">Starter Locs</h4>
                 <div className="space-y-2 mb-4">
                   <p className="font-sans text-[#14B8A6] font-semibold">Short length starting at $165+</p>
-                  <p className="font-sans text-xs text-[#9CA3AF]">For hair approximately 4 inches to ear length.</p>
+                  <p className="font-sans text-xs text-[#4B5563]">For hair approximately 4 inches to ear length.</p>
                   <p className="font-sans text-[#14B8A6] font-semibold">Shoulder length starting at $185+</p>
                 </div>
-                <p className="font-sans text-[#9CA3AF] leading-relaxed mb-4 text-sm">
+                <p className="font-sans text-[#4B5563] leading-relaxed mb-4 text-sm">
                   Pricing is influenced by hair density, length beyond shoulder, and loc size selection.
                 </p>
                 <div className="mt-4">
-                  <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Important notes before your appointment:</p>
-                  <p className="font-sans text-xs text-[#9CA3AF] leading-relaxed mb-3">
+                  <p className="font-sans text-sm font-semibold text-[#0B0F13] mb-2">Important notes before your appointment:</p>
+                  <p className="font-sans text-xs text-[#4B5563] leading-relaxed mb-3">
                     Please come with a preferred loc size reference, either photos or a clear description of the look you are aiming to achieve.
                   </p>
-                  <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Factors that affect final pricing:</p>
+                  <p className="font-sans text-sm font-semibold text-[#0B0F13] mb-2">Factors that affect final pricing:</p>
                   <ul className="space-y-1.5">
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Loc width and size preference</span>
                     </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Parting style selection</span>
                     </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Full head or half head coverage</span>
                     </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Hairline and forehead preference</span>
                     </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Total loc count</span>
                     </li>
                   </ul>
                 </div>
-                <p className="font-sans text-xs text-[#9CA3AF] leading-relaxed mt-4 italic">
+                <p className="font-sans text-xs text-[#4B5563] leading-relaxed mt-4 italic">
                   This ensures your install reflects your vision and sets your locs up to mature exactly how you want them to.
                 </p>
               </div>
 
               {/* Retwist & Maintenance - Adults */}
-              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all">
-                <div className="h-1 w-16 bg-gradient-to-r from-[#4B2B1A] to-[#8B5A3C] mb-4"></div>
+              <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 p-6 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/20 transition-all">
+                <div className="h-1 w-16 bg-gradient-to-r from-[#14B8A6] to-[#0FA1B2] mb-4"></div>
                 <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
-                <h4 className="font-serif text-2xl font-bold text-[#F9FAFB] mb-3">Retwist & Maintenance</h4>
+                <h4 className="font-serif text-2xl font-bold text-[#0B0F13] mb-3">Retwist & Maintenance</h4>
                 <p className="font-sans text-[#14B8A6] font-semibold mb-4">Starting at $135+</p>
-                <p className="font-sans text-[#9CA3AF] leading-relaxed mb-4 text-sm">
+                <p className="font-sans text-[#4B5563] leading-relaxed mb-4 text-sm">
                   Clean parts, healthy tension, and scalp care for existing locs. Regular maintenance to keep your locs thriving and looking their best.
                 </p>
               </div>
 
               {/* Repair / Deep Care - Adults */}
-              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all md:col-span-2">
-                <div className="h-1 w-16 bg-gradient-to-r from-[#4B2B1A] to-[#8B5A3C] mb-4"></div>
+              <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 p-6 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/20 transition-all md:col-span-2">
+                <div className="h-1 w-16 bg-gradient-to-r from-[#14B8A6] to-[#0FA1B2] mb-4"></div>
                 <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
-                <h4 className="font-serif text-2xl font-bold text-[#F9FAFB] mb-3">Repair / Deep Care</h4>
+                <h4 className="font-serif text-2xl font-bold text-[#0B0F13] mb-3">Repair / Deep Care</h4>
                 <p className="font-sans text-[#14B8A6] font-semibold mb-4">Pricing varies</p>
-                <p className="font-sans text-[#9CA3AF] leading-relaxed text-sm">
+                <p className="font-sans text-[#4B5563] leading-relaxed text-sm">
                   Strengthening weak spots, repairing breakage, and restoring structure. Specialized care when your locs need extra attention.
                 </p>
               </div>
@@ -675,27 +684,27 @@ export default function Home() {
               These services can be added to any appointment unless otherwise noted.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all">
+              <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 p-6 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/20 transition-all">
                 <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-serif text-xl font-bold text-[#F9FAFB]">Loc Detox</h4>
+                  <h4 className="font-serif text-xl font-bold text-[#0B0F13]">Loc Detox</h4>
                   <span className="px-3 py-1 rounded-full bg-[#14B8A6]/20 text-[#14B8A6] text-sm font-semibold font-sans">+ $30.00</span>
                 </div>
-                <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mb-4">
+                <p className="font-sans text-sm text-[#4B5563] leading-relaxed mb-4">
                   A deep cleansing treatment that removes buildup, lint, sweat residue, and environmental debris trapped inside the locs. I typically use a clarifying method that may include baking soda, followed by a balancing rinse and moisture reset.
                 </p>
                 <div>
-                  <p className="font-sans text-xs font-semibold text-[#F9FAFB] mb-2">Recommended for:</p>
+                  <p className="font-sans text-xs font-semibold text-[#0B0F13] mb-2">Recommended for:</p>
                   <ul className="space-y-1.5">
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Heavy product users</span>
                     </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Active lifestyles or swimmers</span>
                     </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Locs that appear dull or stiff</span>
                     </li>
@@ -703,27 +712,27 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all">
+              <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 p-6 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/20 transition-all">
                 <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-serif text-xl font-bold text-[#F9FAFB]">Loc Oil Treatment</h4>
+                  <h4 className="font-serif text-xl font-bold text-[#0B0F13]">Loc Oil Treatment</h4>
                   <span className="px-3 py-1 rounded-full bg-[#14B8A6]/20 text-[#14B8A6] text-sm font-semibold font-sans">+ $25.00</span>
                 </div>
-                <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mb-4">
+                <p className="font-sans text-sm text-[#4B5563] leading-relaxed mb-4">
                   This treatment focuses on restoring moisture and sealing hydration into the loc and scalp using lightweight oils appropriate for loc maintenance.
                 </p>
                 <div>
-                  <p className="font-sans text-xs font-semibold text-[#F9FAFB] mb-2">Helps with:</p>
+                  <p className="font-sans text-xs font-semibold text-[#0B0F13] mb-2">Helps with:</p>
                   <ul className="space-y-1.5">
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Dryness</span>
                     </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Dullness</span>
                     </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Scalp comfort between retwists</span>
                     </li>
@@ -731,50 +740,50 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all">
+              <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 p-6 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/20 transition-all">
                 <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-serif text-xl font-bold text-[#F9FAFB]">Scalp Treatment</h4>
+                  <h4 className="font-serif text-xl font-bold text-[#0B0F13]">Scalp Treatment</h4>
                   <span className="px-3 py-1 rounded-full bg-[#14B8A6]/20 text-[#14B8A6] text-sm font-semibold font-sans">+ $30.00</span>
                 </div>
-                <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed">
+                <p className="font-sans text-sm text-[#4B5563] leading-relaxed">
                   A targeted scalp service designed to address dryness, itchiness, tightness, and mild flaking. This service supports long term scalp health and comfort.
                 </p>
               </div>
 
-              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all">
+              <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 p-6 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/20 transition-all">
                 <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-serif text-xl font-bold text-[#F9FAFB]">Loc Repair and Maintenance</h4>
+                  <h4 className="font-serif text-xl font-bold text-[#0B0F13]">Loc Repair and Maintenance</h4>
                   <span className="px-3 py-1 rounded-full bg-[#14B8A6]/20 text-[#14B8A6] text-sm font-semibold font-sans">+ $15.00 each reattachment</span>
                 </div>
-                <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed">
+                <p className="font-sans text-sm text-[#4B5563] leading-relaxed">
                   This includes reinforcing weak locs, thinning areas, or early stage separation, as well as completely detached locs. I will tool the hair and repair or reattach the loc with durability.
                 </p>
               </div>
 
-              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all md:col-span-2 lg:col-span-1">
+              <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 p-6 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/20 transition-all md:col-span-2 lg:col-span-1">
                 <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
-                <h4 className="font-serif text-xl font-bold text-[#F9FAFB] mb-3">Style Add Ons</h4>
-                <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mb-4">
+                <h4 className="font-serif text-xl font-bold text-[#0B0F13] mb-3">Style Add Ons</h4>
+                <p className="font-sans text-sm text-[#4B5563] leading-relaxed mb-4">
                   I offer style flexibility depending on hair length, loc maturity, and desired outcome. Any style may be requested as long as it is appropriate for the hair's condition and stage.
                 </p>
                 <div>
-                  <p className="font-sans text-xs font-semibold text-[#F9FAFB] mb-2">Examples include:</p>
+                  <p className="font-sans text-xs font-semibold text-[#0B0F13] mb-2">Examples include:</p>
                   <ul className="space-y-1.5 mb-3">
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Upstyles</span>
                     </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Barrel twists</span>
                     </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Two strand twists</span>
                     </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Special occasion styles</span>
                     </li>
@@ -794,27 +803,27 @@ export default function Home() {
               I understand that families, teens, and adults all have different schedules and needs. I offer flexible options designed to support consistency, comfort, and long term loc health.
             </p>
             <div className="space-y-6">
-              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 transition-all">
+              <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 p-6 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/20 transition-all">
                 <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
                 <div className="flex items-center gap-3 mb-4">
-                  <h4 className="font-serif text-2xl font-bold text-[#F9FAFB]">Late Night / Early Morning Service Availability</h4>
+                  <h4 className="font-serif text-2xl font-bold text-[#0B0F13]">Late Night / Early Morning Service Availability</h4>
                   <span className="px-3 py-1 rounded-full bg-[#14B8A6]/20 text-[#14B8A6] text-xs font-semibold font-sans">By request only</span>
                 </div>
-                <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mb-4">
+                <p className="font-sans text-sm text-[#4B5563] leading-relaxed mb-4">
                   I offer limited late night and early morning appointment availability for clients who work nontraditional hours or need flexibility. These appointments are scheduled in advance and are priced based on the service requested, time, and complexity of the style.
                 </p>
                 <div>
-                  <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Please note:</p>
+                  <p className="font-sans text-sm font-semibold text-[#0B0F13] mb-2">Please note:</p>
                   <ul className="space-y-1.5">
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Late night/early morning availability is not walk-in</span>
                     </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Confirmation is required prior to booking</span>
                     </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Pricing varies depending on service type and duration</span>
                     </li>
@@ -822,28 +831,28 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 transition-all">
+              <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 p-6 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/20 transition-all">
                 <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
-                <h4 className="font-serif text-2xl font-bold text-[#F9FAFB] mb-4">Free Tours and Consultations</h4>
-                <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mb-4">
+                <h4 className="font-serif text-2xl font-bold text-[#0B0F13] mb-4">Free Tours and Consultations</h4>
+                <p className="font-sans text-sm text-[#4B5563] leading-relaxed mb-4">
                   I offer free tours and brief consultations for new clients who want to see the space, ask questions, or better understand the loc process before committing. This is especially helpful for parents starting children on their loc journey or for clients beginning their first install.
                 </p>
                 <div>
-                  <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Tours are ideal for:</p>
+                  <p className="font-sans text-sm font-semibold text-[#0B0F13] mb-2">Tours are ideal for:</p>
                   <ul className="space-y-1.5">
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>First time loc clients</span>
                     </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Parents of younger children</span>
                     </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Clients transitioning from loose natural hair</span>
                     </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Clients planning a long term loc journey</span>
                     </li>
@@ -851,27 +860,27 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-6 hover:border-[#8B5A3C]/40 transition-all">
+              <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 p-6 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/20 transition-all">
                 <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
                 <div className="flex items-center gap-3 mb-4">
-                  <h4 className="font-serif text-2xl font-bold text-[#F9FAFB]">House Calls</h4>
+                  <h4 className="font-serif text-2xl font-bold text-[#0B0F13]">House Calls</h4>
                   <span className="px-3 py-1 rounded-full bg-[#14B8A6]/20 text-[#14B8A6] text-xs font-semibold font-sans">Additional $60+ depending on range and accessibility</span>
                 </div>
-                <p className="font-sans text-sm text-[#9CA3AF] leading-relaxed mb-4">
+                <p className="font-sans text-sm text-[#4B5563] leading-relaxed mb-4">
                   I offer house call appointments for clients who need in-home service. This fee is added on top of the selected service and covers travel, setup, and time.
                 </p>
                 <div>
-                  <p className="font-sans text-sm font-semibold text-[#F9FAFB] mb-2">Please note:</p>
+                  <p className="font-sans text-sm font-semibold text-[#0B0F13] mb-2">Please note:</p>
                   <ul className="space-y-1.5">
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>House calls must be scheduled in advance</span>
                     </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>Location and parking availability may affect booking approval</span>
                     </li>
-                    <li className="font-sans text-xs text-[#9CA3AF] flex items-start">
+                    <li className="font-sans text-xs text-[#4B5563] flex items-start">
                       <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                       <span>All house calls require confirmation prior to the appointment date</span>
                     </li>
@@ -886,26 +895,26 @@ export default function Home() {
             <h3 className="font-serif text-3xl md:text-4xl font-bold text-[#F9FAFB] mb-8 text-center md:text-left">
               Loc Color Services
             </h3>
-            <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/20 p-8 hover:border-[#8B5A3C]/40 hover:shadow-lg hover:shadow-[#8B5A3C]/10 transition-all max-w-3xl">
-              <div className="h-1 w-16 bg-gradient-to-r from-[#4B2B1A] to-[#8B5A3C] mb-4"></div>
+            <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 p-8 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/20 transition-all max-w-3xl">
+              <div className="h-1 w-16 bg-gradient-to-r from-[#14B8A6] to-[#0FA1B2] mb-4"></div>
               <div className="h-0.5 w-8 bg-[#14B8A6] mb-6"></div>
-              <h4 className="font-serif text-3xl font-bold text-[#F9FAFB] mb-4">Color Enhancement for Locs</h4>
+              <h4 className="font-serif text-3xl font-bold text-[#0B0F13] mb-4">Color Enhancement for Locs</h4>
               <p className="font-sans text-[#14B8A6] font-semibold text-lg mb-4">Starting at $40+</p>
-              <p className="font-sans text-[#9CA3AF] leading-relaxed mb-6">
+              <p className="font-sans text-[#4B5563] leading-relaxed mb-6">
                 This service includes color enhancement or magnet-style color placement for locs. Pricing varies based on hair length, desired look, color placement, and number of locs being colored.
               </p>
               <div>
-                <p className="font-sans text-base font-semibold text-[#F9FAFB] mb-3">Important notes:</p>
+                <p className="font-sans text-base font-semibold text-[#0B0F13] mb-3">Important notes:</p>
                 <ul className="space-y-2">
-                  <li className="font-sans text-sm text-[#9CA3AF] flex items-start">
+                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
                     <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                     <span>Color services are add-ons and must be booked in advance</span>
                   </li>
-                  <li className="font-sans text-sm text-[#9CA3AF] flex items-start">
+                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
                     <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                     <span>Final pricing is determined by length, density, and design choice</span>
                   </li>
-                  <li className="font-sans text-sm text-[#9CA3AF] flex items-start">
+                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
                     <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
                     <span>Photos or inspiration are strongly recommended to ensure accuracy</span>
                   </li>
@@ -916,8 +925,8 @@ export default function Home() {
 
           {/* FINAL NOTES */}
           <div className="reveal-on-scroll">
-            <div className="bg-[#0B0F13] rounded-xl border border-[#8B5A3C]/30 border-t-4 border-t-[#14B8A6] p-8 md:p-10">
-              <p className="font-sans text-base md:text-lg text-[#9CA3AF] leading-relaxed max-w-4xl mx-auto text-center">
+            <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 border-t-4 border-t-[#14B8A6] p-8 md:p-10">
+              <p className="font-sans text-base md:text-lg text-[#4B5563] leading-relaxed max-w-4xl mx-auto text-center">
                 I aim to provide a calm, professional, and supportive experience for every client. My goal is not just styling, but long term loc health, comfort, and confidence. If you are unsure which service to book, I recommend starting with a consultation or tour so we can align on expectations before your appointment.
               </p>
             </div>
@@ -940,22 +949,27 @@ export default function Home() {
             </p>
           </header>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {[1, 2, 3, 4, 5, 6].map((num) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {galleryImages.map((image) => (
               <figure
-                key={num}
-                className="group aspect-[4/5] rounded-xl overflow-hidden border border-[#8B5A3C]/20 bg-[#050609] relative hover:border-[#8B5A3C]/40 hover:scale-[1.02] transition-all duration-300 reveal-on-scroll"
+                key={image.src}
+                className="group aspect-[4/5] rounded-xl overflow-hidden border-2 border-[#14B8A6]/40 bg-white relative hover:border-[#14B8A6] hover:scale-[1.02] transition-all duration-300 reveal-on-scroll"
               >
-                {/* Gradient placeholder content */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[#4B2B1A]/50 via-[#8B5A3C]/30 to-[#050609] flex items-end p-3">
-                  <div className="w-full">
-                    <p className="text-[#14B8A6] font-sans text-[10px] font-semibold uppercase tracking-wide">Gallery image coming soon</p>
-                    <p className="text-[#9CA3AF] font-sans text-[9px] mt-0.5">Client work placeholder</p>
-                </div>
-              </div>
+                <Image
+                  src={image.src}
+                  alt={image.alt}
+                  fill
+                  className="object-cover object-center"
+                  sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+                />
+                <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#050609]/80 to-transparent p-3">
+                  <p className="text-[#14B8A6] font-sans text-[10px] font-semibold uppercase tracking-wide">
+                    {image.caption}
+                  </p>
+                </figcaption>
               </figure>
-                  ))}
-                </div>
+            ))}
+          </div>
               </div>
       </section>
 
