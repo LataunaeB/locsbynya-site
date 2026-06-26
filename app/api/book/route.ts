@@ -13,6 +13,154 @@ if (!fromEmail) {
 
 const resend = apiKey ? new Resend(apiKey) : null;
 
+const MAX_NAME_LENGTH = 100;
+const MAX_PHONE_LENGTH = 30;
+const MAX_NOTES_LENGTH = 2000;
+const MAX_FILES = 5;
+const MAX_TOTAL_FILE_BYTES = 10 * 1024 * 1024;
+
+const ALLOWED_CLIENT_TYPES = new Set(['new', 'returning']);
+
+const ALLOWED_SERVICES = new Set([
+  'new-client-consultation',
+  'kids-starter-locs',
+  'kids-retwist-style',
+  'kids-takedown',
+  'teens-adults-starter-locs',
+  'teens-adults-retwist',
+  'teens-adults-repair',
+]);
+
+const ALLOWED_TIME_WINDOWS = new Set([
+  'thursday-5pm-10pm',
+  'friday-5pm-10pm',
+  'saturday-9am-9pm',
+  'sunday-9am-9pm',
+]);
+
+const ALLOWED_ADD_ONS = new Set([
+  'loc-detox',
+  'loc-oil-treatment',
+  'scalp-treatment',
+  'loc-repair',
+  'style-add-ons',
+  'loc-color',
+  'house-call',
+  'late-night-early-morning',
+]);
+
+const ALLOWED_FILE_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'image/heic',
+  'image/heif',
+  'video/mp4',
+  'video/quicktime',
+  'video/webm',
+  'video/mpeg',
+]);
+
+const serviceNames: Record<string, string> = {
+  'new-client-consultation': 'New Client Consultation',
+  'kids-starter-locs': 'Kids · Starter Locs (Ages 2–12)',
+  'kids-retwist-style': 'Kids · Retwist + Style',
+  'kids-takedown': 'Kids · Loc Take Down + Detangle',
+  'teens-adults-starter-locs': 'Teens & Adults · Starter Locs (13+)',
+  'teens-adults-retwist': 'Teens & Adults · Retwist & Maintenance',
+  'teens-adults-repair': 'Teens & Adults · Repair / Deep Care',
+};
+
+const addOnNames: Record<string, string> = {
+  'loc-detox': 'Loc Detox (+$30)',
+  'loc-oil-treatment': 'Loc Oil Treatment (+$25)',
+  'scalp-treatment': 'Scalp Treatment (+$30)',
+  'loc-repair': 'Loc Repair / Re-attachment (+$15 each)',
+  'style-add-ons': 'Style Add Ons',
+  'loc-color': 'Loc Color Enhancement (starting at $40+)',
+  'house-call': 'House Call (+$60+)',
+  'late-night-early-morning': 'Late Night / Early Morning Slot (by request only)',
+};
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function sanitizeSubjectPart(value: string): string {
+  return value.replace(/[\r\n]+/g, ' ').trim();
+}
+
+function isValidEmail(email: string): boolean {
+  if (email.length > 254) return false;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function isValidPhone(phone: string): boolean {
+  const digits = phone.replace(/\D/g, '');
+  return digits.length >= 10 && digits.length <= 15;
+}
+
+function isValidDate(date: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
+  const parsed = new Date(`${date}T00:00:00`);
+  return !Number.isNaN(parsed.getTime());
+}
+
+function formatDateForEmail(date: string): string {
+  return new Date(`${date}T00:00:00`).toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+function sanitizeFilename(filename: string): string {
+  const base = filename.replace(/[/\\]/g, '_').replace(/\.\./g, '_').trim();
+  return base.slice(0, 200) || 'upload';
+}
+
+function parseAddOns(addOnsJson: string | null): string[] | null {
+  if (!addOnsJson) return [];
+  try {
+    const parsed = JSON.parse(addOnsJson);
+    if (!Array.isArray(parsed)) return null;
+    if (!parsed.every((item) => typeof item === 'string')) return null;
+    if (!parsed.every((item) => ALLOWED_ADD_ONS.has(item))) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function validateFiles(files: File[]): string | null {
+  if (files.length > MAX_FILES) {
+    return `You can upload at most ${MAX_FILES} files.`;
+  }
+
+  let totalBytes = 0;
+  for (const file of files) {
+    if (file.size <= 0) {
+      return 'Uploaded files must not be empty.';
+    }
+    if (!ALLOWED_FILE_TYPES.has(file.type)) {
+      return 'Only image and video files are allowed (JPEG, PNG, GIF, WebP, HEIC, MP4, MOV, WebM).';
+    }
+    totalBytes += file.size;
+    if (totalBytes > MAX_TOTAL_FILE_BYTES) {
+      return 'Total upload size must be 10MB or less.';
+    }
+  }
+
+  return null;
+}
+
 export async function POST(request: NextRequest) {
   try {
     if (!resend || !fromEmail) {
@@ -22,75 +170,130 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parse FormData
     const formData = await request.formData();
-    
-    // Extract form fields
-    const clientType = formData.get('clientType') as string;
-    const service = formData.get('service') as string;
-    const date = formData.get('date') as string;
-    const timeWindow = formData.get('timeWindow') as string;
-    const name = formData.get('name') as string;
-    const email = formData.get('email') as string;
-    const phone = formData.get('phone') as string;
-    const notes = formData.get('notes') as string || '';
-    const hasFiles = formData.get('hasFiles') === 'true';
 
-    // Extract all uploaded files
+    const clientType = String(formData.get('clientType') ?? '').trim();
+    const service = String(formData.get('service') ?? '').trim();
+    const date = String(formData.get('date') ?? '').trim();
+    const timeWindow = String(formData.get('timeWindow') ?? '').trim();
+    const name = String(formData.get('name') ?? '').trim();
+    const email = String(formData.get('email') ?? '').trim();
+    const phone = String(formData.get('phone') ?? '').trim();
+    const notes = String(formData.get('notes') ?? '').trim();
+    const addOnsJson = formData.get('addOns');
+
     const files: File[] = [];
     const fileEntries = formData.getAll('hairFiles');
     for (const entry of fileEntries) {
-      if (entry instanceof File) {
+      if (entry instanceof File && entry.size > 0) {
         files.push(entry);
       }
     }
 
-    // Validate required fields
-    if (!name || !email || !phone || !service || !date || !timeWindow) {
+    if (!name || !email || !phone || !service || !date || !timeWindow || !clientType) {
       return NextResponse.json(
         { message: 'Missing required fields' },
         { status: 400 }
       );
     }
 
-    // Validate new client requirements: must have files
-    if (clientType === 'new' && !hasFiles) {
+    if (name.length > MAX_NAME_LENGTH) {
+      return NextResponse.json(
+        { message: `Name must be ${MAX_NAME_LENGTH} characters or fewer.` },
+        { status: 400 }
+      );
+    }
+
+    if (phone.length > MAX_PHONE_LENGTH) {
+      return NextResponse.json(
+        { message: `Phone must be ${MAX_PHONE_LENGTH} characters or fewer.` },
+        { status: 400 }
+      );
+    }
+
+    if (notes.length > MAX_NOTES_LENGTH) {
+      return NextResponse.json(
+        { message: `Notes must be ${MAX_NOTES_LENGTH} characters or fewer.` },
+        { status: 400 }
+      );
+    }
+
+    if (!ALLOWED_CLIENT_TYPES.has(clientType)) {
+      return NextResponse.json(
+        { message: 'Invalid client type.' },
+        { status: 400 }
+      );
+    }
+
+    if (!ALLOWED_SERVICES.has(service)) {
+      return NextResponse.json(
+        { message: 'Invalid service selection.' },
+        { status: 400 }
+      );
+    }
+
+    if (!isValidDate(date)) {
+      return NextResponse.json(
+        { message: 'Invalid preferred date.' },
+        { status: 400 }
+      );
+    }
+
+    if (!ALLOWED_TIME_WINDOWS.has(timeWindow)) {
+      return NextResponse.json(
+        { message: 'Invalid preferred day and time.' },
+        { status: 400 }
+      );
+    }
+
+    if (!isValidEmail(email)) {
+      return NextResponse.json(
+        { message: 'Invalid email address.' },
+        { status: 400 }
+      );
+    }
+
+    if (!isValidPhone(phone)) {
+      return NextResponse.json(
+        { message: 'Invalid phone number.' },
+        { status: 400 }
+      );
+    }
+
+    const addOnsArray = parseAddOns(typeof addOnsJson === 'string' ? addOnsJson : null);
+    if (addOnsArray === null) {
+      return NextResponse.json(
+        { message: 'Invalid add-ons selection.' },
+        { status: 400 }
+      );
+    }
+
+    if (clientType === 'new' && files.length === 0) {
       return NextResponse.json(
         { message: 'New clients must upload photos/video of their hair so Nya can see your hair texture and condition.' },
         { status: 400 }
       );
     }
 
-    // Format the service name for display
-    const serviceNames: { [key: string]: string } = {
-      'new-client-consultation': 'New Client Consultation',
-      'kids-starter-locs': 'Kids · Starter Locs (Ages 2–12)',
-      'kids-retwist-style': 'Kids · Retwist + Style',
-      'kids-takedown': 'Kids · Loc Take Down + Detangle',
-      'teens-adults-starter-locs': 'Teens & Adults · Starter Locs (13+)',
-      'teens-adults-retwist': 'Teens & Adults · Retwist & Maintenance',
-      'teens-adults-repair': 'Teens & Adults · Repair / Deep Care',
-    };
+    if (files.length > 0) {
+      const fileError = validateFiles(files);
+      if (fileError) {
+        return NextResponse.json({ message: fileError }, { status: 400 });
+      }
+    }
 
-    // Format add-on names for display
-    const addOnNames: { [key: string]: string } = {
-      'loc-detox': 'Loc Detox (+$30)',
-      'loc-oil-treatment': 'Loc Oil Treatment (+$25)',
-      'scalp-treatment': 'Scalp Treatment (+$30)',
-      'loc-repair': 'Loc Repair / Re-attachment (+$15 each)',
-      'style-add-ons': 'Style Add Ons',
-      'loc-color': 'Loc Color Enhancement (starting at $40+)',
-      'house-call': 'House Call (+$60+)',
-      'late-night-early-morning': 'Late Night / Early Morning Slot (by request only)',
-    };
+    const safeName = escapeHtml(name);
+    const safeEmail = escapeHtml(email);
+    const safePhone = escapeHtml(phone);
+    const safeNotes = escapeHtml(notes);
+    const safeTimeWindow = escapeHtml(timeWindow);
+    const serviceName = escapeHtml(serviceNames[service]);
+    const formattedDate = escapeHtml(formatDateForEmail(date));
+    const addOnsDisplay =
+      addOnsArray.map((key) => escapeHtml(addOnNames[key])).join(', ') || 'None';
+    const clientTypeLabel =
+      clientType === 'new' ? 'New Client' : 'Returning Client';
 
-    const serviceName = serviceNames[service] || service;
-    const addOnsJson = formData.get('addOns') as string;
-    const addOnsArray: string[] = addOnsJson ? JSON.parse(addOnsJson) : [];
-    const addOnsDisplay = addOnsArray.map((key) => addOnNames[key] || key).join(', ') || 'None';
-    const clientTypeLabel = clientType === 'new' ? 'New Client' : 'Returning Client';
-
-    // Email to client (confirmation)
     const clientEmailHtml = `
       <!DOCTYPE html>
       <html>
@@ -113,18 +316,18 @@ export async function POST(request: NextRequest) {
               <p style="margin: 10px 0 0 0;">Appointment Confirmed ✓</p>
             </div>
             <div class="content">
-              <p>Hi ${name},</p>
+              <p>Hi ${safeName},</p>
               <p><strong>Your appointment is confirmed!</strong> Thank you for booking with Locs by Nya. We're looking forward to seeing you.</p>
               
               <div class="info-box">
                 <h3 style="margin-top: 0; color: #4F2F18;">Appointment Details</h3>
                 <p><strong>Service:</strong> ${serviceName}</p>
-                <p><strong>Date:</strong> ${new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                <p><strong>Time:</strong> ${timeWindow}</p>
+                <p><strong>Date:</strong> ${formattedDate}</p>
+                <p><strong>Time:</strong> ${safeTimeWindow}</p>
                 <p><strong>Client Type:</strong> ${clientTypeLabel}</p>
                 ${addOnsArray.length > 0 ? `<p><strong>Add-ons & Extras:</strong> ${addOnsDisplay}</p>` : ''}
-                ${clientType === 'new' && hasFiles ? `<p><strong>Files Uploaded:</strong> Yes (${files.length} file${files.length > 1 ? 's' : ''})</p>` : ''}
-                ${notes ? `<p><strong>Notes:</strong> ${notes}</p>` : ''}
+                ${clientType === 'new' && files.length > 0 ? `<p><strong>Files Uploaded:</strong> Yes (${files.length} file${files.length > 1 ? 's' : ''})</p>` : ''}
+                ${notes ? `<p><strong>Notes:</strong> ${safeNotes}</p>` : ''}
               </div>
 
               <div class="info-box" style="background: #FFF9F1; border-left-color: #7A4B27;">
@@ -145,7 +348,6 @@ export async function POST(request: NextRequest) {
       </html>
     `;
 
-    // Email to Nya (notification)
     const nyaEmailHtml = `
       <!DOCTYPE html>
       <html>
@@ -170,20 +372,20 @@ export async function POST(request: NextRequest) {
               
               <div class="info-box">
                 <h3 style="margin-top: 0; color: #4F2F18;">Client Information</h3>
-                <p><strong>Name:</strong> ${name}</p>
-                <p><strong>Email:</strong> ${email}</p>
-                <p><strong>Phone:</strong> ${phone}</p>
+                <p><strong>Name:</strong> ${safeName}</p>
+                <p><strong>Email:</strong> ${safeEmail}</p>
+                <p><strong>Phone:</strong> ${safePhone}</p>
                 <p><strong>Client Type:</strong> ${clientTypeLabel}</p>
               </div>
 
               <div class="info-box">
                 <h3 style="margin-top: 0; color: #4F2F18;">Appointment Details</h3>
                 <p><strong>Service:</strong> ${serviceName}</p>
-                <p><strong>Date:</strong> ${new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                <p><strong>Time:</strong> ${timeWindow}</p>
+                <p><strong>Date:</strong> ${formattedDate}</p>
+                <p><strong>Time:</strong> ${safeTimeWindow}</p>
                 ${addOnsArray.length > 0 ? `<p><strong>Add-ons & Extras:</strong> ${addOnsDisplay}</p>` : ''}
-                ${notes ? `<p><strong>Notes:</strong> ${notes}</p>` : ''}
-                ${clientType === 'new' ? `<p><strong>Files Uploaded:</strong> ${hasFiles ? `Yes (${files.length} file${files.length > 1 ? 's' : ''}) - See attachments below` : 'No'}</p>` : ''}
+                ${notes ? `<p><strong>Notes:</strong> ${safeNotes}</p>` : ''}
+                ${clientType === 'new' ? `<p><strong>Files Uploaded:</strong> ${files.length > 0 ? `Yes (${files.length} file${files.length > 1 ? 's' : ''}) - See attachments below` : 'No'}</p>` : ''}
               </div>
             </div>
             <div class="footer">
@@ -194,15 +396,6 @@ export async function POST(request: NextRequest) {
       </html>
     `;
 
-    // Prepare file attachments for Nya's email
-    const attachments = files.map((file) => {
-      return {
-        filename: file.name,
-        content: file as any, // Resend will handle the File object
-      };
-    });
-
-    // Send email to client (no attachments)
     await resend.emails.send({
       from: fromEmail,
       to: email,
@@ -210,18 +403,17 @@ export async function POST(request: NextRequest) {
       html: clientEmailHtml,
     });
 
-    // Send notification email to Nya (with file attachments if any)
     await resend.emails.send({
       from: fromEmail,
       to: 'locsbynya@locsbynya.com',
-      subject: `New Appointment Confirmed: ${name} - ${serviceName}`,
+      subject: `New Appointment Confirmed: ${sanitizeSubjectPart(name)} - ${serviceNames[service]}`,
       html: nyaEmailHtml,
       attachments: files.length > 0 ? await Promise.all(
         files.map(async (file) => {
           const arrayBuffer = await file.arrayBuffer();
           const buffer = Buffer.from(arrayBuffer);
           return {
-            filename: file.name,
+            filename: sanitizeFilename(file.name),
             content: buffer,
           };
         })
@@ -240,4 +432,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
