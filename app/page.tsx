@@ -181,7 +181,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto flex items-center justify-center text-sm text-center">
             <span>
               Promo: Get $10 off your next service when you leave a review on{" "}
-              <a href="https://YOUR-YELP-PAGE-LINK" className="underline text-[#14B8A6] hover:text-[#14B8A6]/80 transition-colors">
+              <a href="http://yelp.com/biz/locs-by-nya-los-angeles?hrid=YT2S-SVV5iLIyvKTvloiCg&utm_campaign=bizapp_ios_review_share_popup&utm_medium=copy_link&utm_source=(direct)" className="underline text-[#14B8A6] hover:text-[#14B8A6]/80 transition-colors">
                 Yelp Reviews
               </a>
               {" "}after your appointment.
