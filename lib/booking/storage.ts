@@ -8,7 +8,7 @@ export interface StoredBookingDraft {
 
 export async function saveBookingDraft(draft: PendingBookingDraft): Promise<StoredBookingDraft> {
   const blob = await put(`bookings/drafts/${draft.id}.json`, JSON.stringify(draft), {
-    access: 'private',
+    access: 'public',
     contentType: 'application/json',
   });
 
@@ -20,7 +20,7 @@ export async function saveBookingDraft(draft: PendingBookingDraft): Promise<Stor
 
 export async function updateBookingDraft(draftPath: string, draft: PendingBookingDraft): Promise<string> {
   const blob = await put(draftPath, JSON.stringify(draft), {
-    access: 'private',
+    access: 'public',
     contentType: 'application/json',
   });
 
