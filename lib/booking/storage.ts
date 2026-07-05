@@ -41,7 +41,7 @@ export async function uploadBookingPhotos(files: File[], bookingId: string): Pro
     files.map(async (file) => {
       const fileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-').slice(0, 120) || 'upload';
       const blob = await put(`bookings/photos/${bookingId}/${fileName}`, file, {
-        access: 'private',
+        access: 'public',
         contentType: file.type || 'application/octet-stream',
       });
       return blob.downloadUrl || blob.url;
