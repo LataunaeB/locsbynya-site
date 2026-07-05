@@ -87,41 +87,27 @@ export default function Home() {
       formDataToSend.append('email', formData.email);
       formDataToSend.append('phone', formData.phone);
       formDataToSend.append('notes', formData.notes || '');
-      formDataToSend.append('hasFiles', hairFiles && hairFiles.length > 0 ? 'true' : 'false');
       formDataToSend.append('addOns', JSON.stringify(addOns));
 
-      // Append all files
       if (hairFiles) {
         for (let i = 0; i < hairFiles.length; i++) {
           formDataToSend.append('hairFiles', hairFiles[i]);
         }
       }
 
-      const response = await fetch('/api/book', {
+      const response = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
         body: formDataToSend,
       });
 
-      if (response.ok) {
-        alert('Appointment confirmed! You will receive a confirmation email shortly.');
-        // Reset form
-      setFormData({
-          clientType: "",
-          service: "",
-          date: "",
-          timeWindow: "",
-        name: "",
-        email: "",
-        phone: "",
-          notes: "",
-        });
-        setAddOns([]);
-        setDepositAgreed(false);
-        setHairFiles(null);
-      } else {
-        const error = await response.json();
-        alert(`Error: ${error.message || 'Failed to confirm appointment'}`);
+      const data = await response.json();
+
+      if (response.ok && data.url) {
+        window.location.href = data.url;
+        return;
       }
+
+      alert(`Error: ${data.message || 'Unable to start checkout. Please try again.'}`);
     } catch (error) {
       console.error('Error submitting form:', error);
       alert('An error occurred. Please try again or contact us directly.');
