@@ -270,7 +270,7 @@ export default function Home() {
         {/* Hero Background Image */}
         <div className="absolute inset-0 z-0">
                   <Image
-            src="/images/hero-locs.png"
+            src="/images/New Hero Image.jpg"
             alt="Luxury locs by Nya - precise parts and impeccable styling"
             fill
                     priority
@@ -348,7 +348,7 @@ export default function Home() {
         <div className="absolute bottom-10 right-8 z-20 hidden md:block opacity-0 animate-hero-fade-delay-5">
           <div className="relative w-56 aspect-[3/4] rounded-3xl overflow-hidden ring-1 ring-slate-700/60 shadow-xl shadow-black/40">
             <Image
-              src="/images/hero-locs.png"
+              src="/images/New Hero Image.jpg"
               alt="Close-up of precise loc parts"
               fill
               className="object-cover object-top"
@@ -366,7 +366,7 @@ export default function Home() {
         <div className="relative z-20 md:hidden mt-8 mx-auto opacity-0 animate-hero-fade-delay-5">
           <div className="relative w-40 aspect-[3/4] rounded-3xl overflow-hidden ring-1 ring-slate-700/60 shadow-xl shadow-black/40">
             <Image
-              src="/images/hero-locs.png"
+              src="/images/New Hero Image.jpg"
               alt="Close-up of precise loc parts"
               fill
               className="object-cover object-top"
