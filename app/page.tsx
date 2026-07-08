@@ -812,15 +812,43 @@ export default function Home() {
                   className="w-full px-4 py-3 rounded-lg border border-[#8B5A3C]/30 bg-[#050609] text-[#F9FAFB] font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/40 focus:border-[#14B8A6] transition-colors"
                 >
                   <option value="">Select a service</option>
-                  {isNewClient && (
-                    <option value="new-client-consultation">New Client Consultation</option>
-                  )}
-                  <option value="kids-starter-locs">Kids · Starter Locs (Ages 2–12)</option>
-                  <option value="kids-retwist-style">Kids · Retwist + Style</option>
-                  <option value="kids-takedown">Kids · Loc Take Down + Detangle</option>
-                  <option value="teens-adults-starter-locs">Teens & Adults · Starter Locs (13+)</option>
-                  <option value="teens-adults-retwist">Teens & Adults · Retwist & Maintenance</option>
-                  <option value="teens-adults-repair">Teens & Adults · Repair / Deep Care</option>
+                  <optgroup label="Start Your Loc Journey">
+                    <option value="starter-locs">Starter Locs: Comb Coil or Two-Strand Twist</option>
+                    <option value="instant-locs">Instant Locs</option>
+                    <option value="traditional-loc-consultation">Traditional Loc Consultation</option>
+                  </optgroup>
+                  <optgroup label="Signature Maintenance">
+                    <option value="signature-retwist">Signature Retwist</option>
+                    <option value="retwist-style">Retwist + Style</option>
+                    <option value="interlocking-maintenance">Interlocking Maintenance</option>
+                    <option value="detox-retwist">Detox + Retwist</option>
+                    <option value="retwist-membership">Retwist Membership</option>
+                  </optgroup>
+                  <optgroup label="Loc Restoration">
+                    <option value="loc-repair">Loc Repair</option>
+                    <option value="broken-loc-repair">Broken Loc Repair</option>
+                    <option value="reattachment">Reattachment</option>
+                    <option value="root-reattachment">Root Reattachment</option>
+                    <option value="wick-repair">Wick Repair</option>
+                    <option value="loc-reconstruction">Loc Reconstruction</option>
+                    <option value="loc-take-down-detangle">Loc Take Down &amp; Detangle</option>
+                  </optgroup>
+                  <optgroup label="Hair Wellness">
+                    <option value="scalp-detox">Scalp Detox</option>
+                    <option value="deep-cleansing-detox">Deep Cleansing Detox</option>
+                    <option value="deep-conditioning">Deep Conditioning</option>
+                    <option value="hydration-treatment">Hydration Treatment</option>
+                    <option value="protein-treatment">Protein Treatment</option>
+                    <option value="hot-oil-treatment">Hot Oil Treatment</option>
+                    <option value="precision-trim">Precision Trim</option>
+                  </optgroup>
+                  <optgroup label="VIP Experiences">
+                    <option value="house-call">House Call</option>
+                    <option value="emergency-appointment">Emergency Appointment</option>
+                    <option value="bridal-loc-package">Bridal Loc Package</option>
+                    <option value="birthday-package">Birthday Package</option>
+                    <option value="photoshoot-ready-package">Photoshoot Ready Package</option>
+                  </optgroup>
                 </select>
               </div>
 
