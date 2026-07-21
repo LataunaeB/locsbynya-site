@@ -34,6 +34,7 @@ type ServiceCardData = {
   pricingItems?: string[];
   useLengthPriceGrid?: boolean;
   pricingNote?: string;
+  hidePricingSection?: boolean;
 };
 
 const serviceCards: ServiceCardData[] = [
@@ -139,29 +140,16 @@ const serviceCards: ServiceCardData[] = [
     title: 'Luxury Add-ons',
     description: 'Optional upgrades to personalize and elevate your service.',
     services: [
-      'Loc Detox',
-      'Loc Oil Treatment',
-      'Scalp Treatment',
-      'Loc Repair / Re-attachment',
-      'Loc Jewelry Installation',
-      'Color Consultation',
-      'Style Add Ons',
-      'Loc Color Enhancement',
-      'House Call',
-      'Late Night / Early Morning Slot',
+      'Loc Detox - $30',
+      'Loc Oil Treatment - $25',
+      'Scalp Treatment - $30',
+      'Loc Repair / Re-attachment - $15 each',
+      'Loc Jewelry Installation - $15+',
+      'Color Consultation - $30',
+      'Style Add-Ons - priced by style',
+      'Loc Color Enhancement - starting at $40+',
     ],
-    pricingItems: [
-      'Loc Detox: +$30',
-      'Loc Oil Treatment: +$25',
-      'Scalp Treatment: +$30',
-      'Loc Repair / Re-attachment: +$15 each',
-      'Loc Jewelry Installation: $15+',
-      'Color Consultation: $30',
-      'Style Add Ons: priced by style',
-      'Loc Color Enhancement: starting at $40+',
-      'House Call: +$60+, depending on range and accessibility',
-      'Late Night / Early Morning Slot: by request only',
-    ],
+    hidePricingSection: true,
   },
 ];
 
@@ -173,6 +161,7 @@ function ServiceCard({
   pricingItems,
   useLengthPriceGrid,
   pricingNote,
+  hidePricingSection,
 }: ServiceCardData) {
   const [isExpanded, setIsExpanded] = useState(false);
   const hasMoreServices = services.length > 3;
@@ -204,40 +193,42 @@ function ServiceCard({
           )}
         </div>
 
-        <div className="mt-auto pt-5">
-          <div className="border-t border-[#14B8A6]/20 pt-3.5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-[#14B8A6]">Starting Prices</p>
-            {pricingText && (
-              <p className="mt-2 text-xs font-semibold leading-relaxed text-[#0B0F13]">{pricingText}</p>
-            )}
-            {pricingItems && (
-              useLengthPriceGrid ? (
-                <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {pricingItems.map((item) => {
-                    const [label, value] = item.split(': ');
-                    return (
-                      <div key={item} className="rounded-lg border border-[#14B8A6]/20 bg-[#F9FAFB] px-2.5 py-2 text-center">
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#4B5563]">{label}</p>
-                        <p className="mt-1 text-sm font-semibold text-[#0B0F13]">{value}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="mt-2 space-y-1.5">
-                  {pricingItems.map((item) => (
-                    <p key={item} className="text-sm leading-relaxed text-[#0B0F13]">
-                      {item}
-                    </p>
-                  ))}
-                </div>
-              )
-            )}
-            {pricingNote && (
-              <p className="mt-2 text-xs leading-relaxed text-[#4B5563]">{pricingNote}</p>
-            )}
+        {!hidePricingSection && (
+          <div className="mt-auto pt-5">
+            <div className="border-t border-[#14B8A6]/20 pt-3.5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-[#14B8A6]">Starting Prices</p>
+              {pricingText && (
+                <p className="mt-2 text-xs font-semibold leading-relaxed text-[#0B0F13]">{pricingText}</p>
+              )}
+              {pricingItems && (
+                useLengthPriceGrid ? (
+                  <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {pricingItems.map((item) => {
+                      const [label, value] = item.split(': ');
+                      return (
+                        <div key={item} className="rounded-lg border border-[#14B8A6]/20 bg-[#F9FAFB] px-2.5 py-2 text-center">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#4B5563]">{label}</p>
+                          <p className="mt-1 text-sm font-semibold text-[#0B0F13]">{value}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="mt-2 space-y-1.5">
+                    {pricingItems.map((item) => (
+                      <p key={item} className="text-sm leading-relaxed text-[#0B0F13]">
+                        {item}
+                      </p>
+                    ))}
+                  </div>
+                )
+              )}
+              {pricingNote && (
+                <p className="mt-2 text-xs leading-relaxed text-[#4B5563]">{pricingNote}</p>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </article>
   );
