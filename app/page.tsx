@@ -32,6 +32,7 @@ type ServiceCardData = {
   services: string[];
   pricingText?: string;
   pricingItems?: string[];
+  pricingDisclaimer?: string;
   pricingNote?: string;
 };
 
@@ -44,7 +45,14 @@ const serviceCards: ServiceCardData[] = [
       'Instant Locs',
       'Traditional Loc Consultation',
     ],
-    pricingText: 'Pricing provided after consultation.',
+    pricingText: 'Length-based starting prices',
+    pricingItems: [
+      'Short: $175+',
+      'Medium: $225+',
+      'Long: $300+',
+      'XL: $400+',
+    ],
+    pricingDisclaimer: 'Final pricing may vary based on length, density, loc count, condition, repairs, styling, and service time.',
   },
   {
     title: 'Signature Maintenance',
@@ -56,7 +64,14 @@ const serviceCards: ServiceCardData[] = [
       'Detox + Retwist',
       'Retwist Membership',
     ],
-    pricingText: 'Pricing provided after consultation.',
+    pricingText: 'Length-based starting prices',
+    pricingItems: [
+      'Short: $175+',
+      'Medium: $225+',
+      'Long: $300+',
+      'XL: $400+',
+    ],
+    pricingDisclaimer: 'Final pricing may vary based on length, density, loc count, condition, repairs, styling, and service time.',
   },
   {
     title: 'Loc Restoration',
@@ -70,13 +85,14 @@ const serviceCards: ServiceCardData[] = [
       'Loc Reconstruction',
       'Loc Take Down & Detangle',
     ],
-    pricingText: 'Length-based pricing',
+    pricingText: 'Length-based starting prices',
     pricingItems: [
       'Short: $175+',
       'Medium: $225+',
       'Long: $300+',
       'XL: $400+',
     ],
+    pricingDisclaimer: 'Final pricing may vary based on length, density, loc count, condition, repairs, styling, and service time.',
   },
   {
     title: 'Hair Wellness',
@@ -136,6 +152,7 @@ function ServiceCard({
   services,
   pricingText,
   pricingItems,
+  pricingDisclaimer,
   pricingNote,
 }: ServiceCardData) {
   return (
@@ -173,9 +190,11 @@ function ServiceCard({
             {pricingNote && (
               <p className="mt-2 text-xs leading-relaxed text-[#4B5563]">{pricingNote}</p>
             )}
-            <p className="mt-3 text-[11px] leading-relaxed text-[#6B7280]">
-              Final pricing may vary based on length, density, condition, buildup, repairs, and service time.
-            </p>
+            {pricingDisclaimer && (
+              <p className="mt-3 text-[11px] leading-relaxed text-[#6B7280]">
+                {pricingDisclaimer}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -596,7 +615,7 @@ export default function Home() {
                 Reserve Your Appointment
               </p>
               <p className="mt-2 font-sans text-sm leading-relaxed text-[#D1D5DB]">
-                A $25 deposit is required to secure your appointment and is applied toward your final service total.
+                A $25 deposit secures your appointment and is applied toward your final service total.
               </p>
               <div className="mt-4 h-px w-full bg-gradient-to-r from-transparent via-[#14B8A6]/40 to-transparent" aria-hidden="true"></div>
             </div>
