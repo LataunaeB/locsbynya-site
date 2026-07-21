@@ -1,6 +1,6 @@
-import { del, list, put } from '@vercel/blob';
+import { del, get, list, put } from '@vercel/blob';
 import { sanitizeFilename } from './validate';
-import type { BookingDraft, EmailAttachment, ValidatedBooking } from './types';
+import type { BookingDraft, EmailAttachment, ValidatedBooking, StoredFileRef } from './types';
 
 const DRAFT_PREFIX = 'pending-bookings';
 const PROCESSED_PREFIX = 'stripe-processed';
@@ -20,11 +20,12 @@ export async function saveBookingDraft(
     const filename = sanitizeFilename(file.name);
     const pathname = `${DRAFT_PREFIX}/${bookingId}/files/${index}-${filename}`;
     const blob = await put(pathname, file, {
-      access: 'public',
+      access: 'private',
       contentType: file.type,
       addRandomSuffix: false,
     });
     fileRefs.push({
+      pathname,
       url: blob.url,
       filename,
       contentType: file.type,
@@ -48,7 +49,7 @@ export async function saveBookingDraft(
   };
 
   await put(manifestPath(bookingId), JSON.stringify(draft), {
-    access: 'public',
+    access: 'private',
     contentType: 'application/json',
     addRandomSuffix: false,
   });
@@ -68,12 +69,16 @@ export async function loadBookingDraft(
     return null;
   }
 
-  const response = await fetch(manifestBlob.url);
-  if (!response.ok) {
+  const result = await get(manifestBlob.pathname, {
+    access: 'private',
+    useCache: false,
+  });
+  if (!result) {
     return null;
   }
 
-  return (await response.json()) as BookingDraft;
+  const rawBody = await new Response(result.stream).text();
+  return JSON.parse(rawBody) as BookingDraft;
 }
 
 export async function markDraftEmailsSent(bookingId: string): Promise<void> {
@@ -84,7 +89,7 @@ export async function markDraftEmailsSent(bookingId: string): Promise<void> {
 
   draft.emailsSent = true;
   await put(manifestPath(bookingId), JSON.stringify(draft), {
-    access: 'public',
+    access: 'private',
     contentType: 'application/json',
     addRandomSuffix: false,
   });
@@ -96,11 +101,21 @@ export async function loadDraftAttachments(
   const attachments: EmailAttachment[] = [];
 
   for (const fileRef of draft.files) {
-    const response = await fetch(fileRef.url);
-    if (!response.ok) {
+    const source = fileRef.pathname ?? fileRef.url;
+    if (!source) {
+      throw new Error(`Missing file path for uploaded file: ${fileRef.filename}`);
+    }
+
+    const result = await get(source, {
+      access: 'private',
+      useCache: false,
+    });
+
+    if (!result) {
       throw new Error(`Failed to load uploaded file: ${fileRef.filename}`);
     }
-    const arrayBuffer = await response.arrayBuffer();
+
+    const arrayBuffer = await new Response(result.stream).arrayBuffer();
     attachments.push({
       filename: fileRef.filename,
       content: Buffer.from(arrayBuffer),
@@ -131,7 +146,7 @@ export async function deleteBookingDraft(bookingId: string): Promise<void> {
   if (blobs.blobs.length === 0) {
     return;
   }
-  await del(blobs.blobs.map((blob) => blob.url));
+  await del(blobs.blobs.map((blob) => blob.pathname));
 }
 
 export async function isStripeEventProcessed(eventId: string): Promise<boolean> {
@@ -142,7 +157,7 @@ export async function isStripeEventProcessed(eventId: string): Promise<boolean> 
 
 export async function markStripeEventProcessed(eventId: string): Promise<void> {
   await put(`${PROCESSED_PREFIX}/${eventId}.json`, JSON.stringify({ processedAt: new Date().toISOString() }), {
-    access: 'public',
+    access: 'private',
     contentType: 'application/json',
     addRandomSuffix: false,
   });

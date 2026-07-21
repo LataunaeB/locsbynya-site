@@ -12,9 +12,10 @@ export type ValidatedBooking = {
 };
 
 export type StoredFileRef = {
-  url: string;
+  pathname: string;
   filename: string;
   contentType: string;
+  url?: string;
 };
 
 export type BookingDraft = {

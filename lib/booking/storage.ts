@@ -1,4 +1,4 @@
-import { put } from '@vercel/blob';
+import { get, put } from '@vercel/blob';
 import { PendingBookingDraft } from './types';
 
 export interface StoredBookingDraft {
@@ -8,7 +8,7 @@ export interface StoredBookingDraft {
 
 export async function saveBookingDraft(draft: PendingBookingDraft): Promise<StoredBookingDraft> {
   const blob = await put(`bookings/drafts/${draft.id}.json`, JSON.stringify(draft), {
-    access: 'public',
+    access: 'private',
     contentType: 'application/json',
   });
 
@@ -20,7 +20,7 @@ export async function saveBookingDraft(draft: PendingBookingDraft): Promise<Stor
 
 export async function updateBookingDraft(draftPath: string, draft: PendingBookingDraft): Promise<string> {
   const blob = await put(draftPath, JSON.stringify(draft), {
-    access: 'public',
+    access: 'private',
     contentType: 'application/json',
   });
 
@@ -28,12 +28,16 @@ export async function updateBookingDraft(draftPath: string, draft: PendingBookin
 }
 
 export async function loadBookingDraft(draftUrl: string): Promise<PendingBookingDraft | null> {
-  const response = await fetch(draftUrl);
-  if (!response.ok) {
+  const result = await get(draftUrl, {
+    access: 'private',
+    useCache: false,
+  });
+  if (!result) {
     return null;
   }
 
-  return (await response.json()) as PendingBookingDraft;
+  const rawBody = await new Response(result.stream).text();
+  return JSON.parse(rawBody) as PendingBookingDraft;
 }
 
 export async function uploadBookingPhotos(files: File[], bookingId: string): Promise<string[]> {
@@ -41,7 +45,7 @@ export async function uploadBookingPhotos(files: File[], bookingId: string): Pro
     files.map(async (file) => {
       const fileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-').slice(0, 120) || 'upload';
       const blob = await put(`bookings/photos/${bookingId}/${fileName}`, file, {
-        access: 'public',
+        access: 'private',
         contentType: file.type || 'application/octet-stream',
       });
       return blob.downloadUrl || blob.url;
