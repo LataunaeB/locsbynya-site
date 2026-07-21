@@ -26,6 +26,163 @@ const galleryImages = [
   { src: "/images/Longest locs (no bg).PNG", alt: "Long mature locs", caption: "Long mature locs" },
 ];
 
+type ServiceCardData = {
+  title: string;
+  description: string;
+  services: string[];
+  pricingText?: string;
+  pricingItems?: string[];
+  pricingNote?: string;
+};
+
+const serviceCards: ServiceCardData[] = [
+  {
+    title: 'Start Your Loc Journey',
+    description: 'Ideal for new clients beginning or planning their loc journey.',
+    services: [
+      'Starter Locs: Comb Coil or Two-Strand Twist',
+      'Instant Locs',
+      'Traditional Loc Consultation',
+    ],
+    pricingText: 'Pricing provided after consultation.',
+  },
+  {
+    title: 'Signature Maintenance',
+    description: 'Designed for consistent upkeep, shape, and long-term loc health.',
+    services: [
+      'Signature Retwist',
+      'Retwist + Style',
+      'Interlocking Maintenance',
+      'Detox + Retwist',
+      'Retwist Membership',
+    ],
+    pricingText: 'Pricing provided after consultation.',
+  },
+  {
+    title: 'Loc Restoration',
+    description: 'Restoration-focused care for repair, structural support, and rebuilding.',
+    services: [
+      'Loc Repair',
+      'Broken Loc Repair',
+      'Reattachment',
+      'Root Reattachment',
+      'Wick Repair',
+      'Loc Reconstruction',
+      'Loc Take Down & Detangle',
+    ],
+    pricingText: 'Length-based pricing',
+    pricingItems: [
+      'Short: $175+',
+      'Medium: $225+',
+      'Long: $300+',
+      'XL: $400+',
+    ],
+  },
+  {
+    title: 'Hair Wellness',
+    description: 'Scalp-first treatments to nourish hair and support healthy growth.',
+    services: [
+      'Scalp Detox',
+      'Deep Cleansing Detox',
+      'Deep Conditioning',
+      'Hydration Treatment',
+      'Protein Treatment',
+      'Hot Oil Treatment',
+      'Precision Trim',
+    ],
+    pricingText: 'Pricing provided after consultation.',
+  },
+  {
+    title: 'VIP Experiences',
+    description: 'Concierge-level appointment options for elevated and time-sensitive needs.',
+    services: [
+      'House Call',
+      'Emergency Appointment',
+      'Bridal Loc Package',
+      'Birthday Package',
+      'Photoshoot Ready Package',
+    ],
+    pricingText: 'Pricing provided after consultation.',
+  },
+  {
+    title: 'Add-ons & Extras',
+    description: 'Optional upgrades you can add to personalize your appointment.',
+    services: [
+      'Loc Detox',
+      'Loc Oil Treatment',
+      'Scalp Treatment',
+      'Loc Repair / Re-attachment',
+      'Style Add Ons',
+      'Loc Color Enhancement',
+      'House Call',
+      'Late Night / Early Morning Slot',
+    ],
+    pricingItems: [
+      'Loc Detox: +$30',
+      'Loc Oil Treatment: +$25',
+      'Scalp Treatment: +$30',
+      'Loc Repair / Re-attachment: +$15 each',
+      'Style Add Ons: priced by style',
+      'Loc Color Enhancement: starting at $40+',
+      'House Call: +$60+, depending on range and accessibility',
+      'Late Night / Early Morning Slot: by request only',
+    ],
+  },
+];
+
+function ServiceCard({
+  title,
+  description,
+  services,
+  pricingText,
+  pricingItems,
+  pricingNote,
+}: ServiceCardData) {
+  return (
+    <article className="flex h-full flex-col rounded-2xl border border-[#14B8A6]/30 bg-white p-6 md:p-7 shadow-[0_18px_40px_rgba(11,15,19,0.08)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#14B8A6]/60 hover:shadow-[0_24px_50px_rgba(20,184,166,0.14)]">
+      <div className="h-1 w-20 rounded-full bg-gradient-to-r from-[#14B8A6] to-[#0FA1B2]" />
+      <div className="flex flex-1 flex-col pt-4">
+        <div>
+          <h3 className="font-serif text-[1.65rem] font-bold leading-tight text-[#0B0F13]">{title}</h3>
+          <p className="mt-3 font-sans text-sm leading-relaxed text-[#4B5563]">{description}</p>
+          <ul className="mt-5 space-y-2.5">
+            {services.map((service) => (
+              <li key={service} className="flex items-start gap-3 font-sans text-sm leading-relaxed text-[#4B5563]">
+                <span className="mt-1.5 text-[#14B8A6]">•</span>
+                <span>{service}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="mt-auto pt-6">
+          <div className="border-t border-[#14B8A6]/20 pt-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-[#14B8A6]">Pricing</p>
+            {pricingText && (
+              <p className="mt-2 text-sm font-semibold leading-relaxed text-[#0B0F13]">{pricingText}</p>
+            )}
+            {pricingItems && (
+              <div className="mt-2 space-y-1.5">
+                {pricingItems.map((item) => (
+                  <p key={item} className="text-sm leading-relaxed text-[#0B0F13]">
+                    {item}
+                  </p>
+                ))}
+              </div>
+            )}
+            {pricingNote && (
+              <p className="mt-2 text-xs leading-relaxed text-[#4B5563]">{pricingNote}</p>
+            )}
+            <p className="mt-3 text-[11px] leading-relaxed text-[#6B7280]">
+              Final pricing may vary based on length, density, condition, buildup, repairs, and service time.
+            </p>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
+
 export default function Home() {
   const [showPromoBar, setShowPromoBar] = useState(true);
   const [formData, setFormData] = useState({
@@ -429,246 +586,32 @@ export default function Home() {
               Services & Pricing
             </h2>
             <p className="font-sans text-lg text-[#9CA3AF] max-w-3xl mx-auto leading-relaxed">
-              My work is centered on scalp health, clean parting, and styles that mature beautifully over time. All services include a wash, blow dry, and style unless otherwise noted.
+              My work is centered on scalp health, clean parting, and styles that mature beautifully over time. Each category below is organized for fast, clear scanning on any screen.
             </p>
           </header>
 
-          {/* SERVICES CATEGORY CARDS */}
-          <div className="mb-20 reveal-on-scroll">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 p-6 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/20 transition-all group">
-                <div className="h-1 w-16 bg-gradient-to-r from-[#14B8A6] to-[#0FA1B2] mb-4"></div>
-                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
-                <h4 className="font-serif text-2xl font-bold text-[#0B0F13] mb-3">Start Your Loc Journey</h4>
-                <p className="font-sans text-[#4B5563] leading-relaxed mb-4 text-sm">
-                  Perfect if you're beginning your loc journey.
-                </p>
-                <ul className="space-y-1.5">
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Starter Locs: Comb Coil or Two-Strand Twist</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Instant Locs</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Traditional Loc Consultation</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 p-6 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/20 transition-all group">
-                <div className="h-1 w-16 bg-gradient-to-r from-[#14B8A6] to-[#0FA1B2] mb-4"></div>
-                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
-                <h4 className="font-serif text-2xl font-bold text-[#0B0F13] mb-3">Signature Maintenance</h4>
-                <p className="font-sans text-[#4B5563] leading-relaxed mb-4 text-sm">
-                  Keep your locs healthy, neat, and growing.
-                </p>
-                <ul className="space-y-1.5">
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Signature Retwist</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Retwist + Style</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Interlocking Maintenance</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Detox + Retwist</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Retwist Membership</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 p-6 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/20 transition-all group">
-                <div className="h-1 w-16 bg-gradient-to-r from-[#14B8A6] to-[#0FA1B2] mb-4"></div>
-                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
-                <h4 className="font-serif text-2xl font-bold text-[#0B0F13] mb-3">Loc Restoration</h4>
-                <p className="font-sans text-[#4B5563] leading-relaxed mb-4 text-sm">
-                  Repair, restore, or remove damaged locs.
-                </p>
-                <ul className="space-y-1.5">
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Loc Repair</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Broken Loc Repair</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Reattachment</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Root Reattachment</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Wick Repair</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Loc Reconstruction</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Loc Take Down & Detangle</span>
-                  </li>
-                </ul>
-                <p className="font-sans text-sm text-[#14B8A6] font-semibold mt-4">
-                  Short: $175+ • Medium: $225+ • Long: $300+ • XL: $400+
-                </p>
-              </div>
-
-              <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 p-6 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/20 transition-all group">
-                <div className="h-1 w-16 bg-gradient-to-r from-[#14B8A6] to-[#0FA1B2] mb-4"></div>
-                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
-                <h4 className="font-serif text-2xl font-bold text-[#0B0F13] mb-3">Hair Wellness</h4>
-                <p className="font-sans text-[#4B5563] leading-relaxed mb-4 text-sm">
-                  Treatments that nourish the scalp and support healthy hair.
-                </p>
-                <ul className="space-y-1.5">
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Scalp Detox</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Deep Cleansing Detox</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Deep Conditioning</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Hydration Treatment</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Protein Treatment</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Hot Oil Treatment</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Precision Trim</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 p-6 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/20 transition-all group">
-                <div className="h-1 w-16 bg-gradient-to-r from-[#14B8A6] to-[#0FA1B2] mb-4"></div>
-                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
-                <h4 className="font-serif text-2xl font-bold text-[#0B0F13] mb-3">Luxury Add-Ons</h4>
-                <p className="font-sans text-[#4B5563] leading-relaxed mb-4 text-sm">
-                  Enhance your appointment with premium add-ons.
-                </p>
-                <ul className="space-y-1.5">
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Loc Repair / Reattachment: $10 per loc</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Deep Cleansing Detox: $35</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Protein Treatment: $30</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Moisture Treatment: $25</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Precision Trim: $25</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Loc Jewelry: $15+</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Color Consultation: $30</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Same-Day Appointment: $40</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Holiday Appointment: $75</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Sunday Appointment: $50</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 p-6 hover:border-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/20 transition-all group">
-                <div className="h-1 w-16 bg-gradient-to-r from-[#14B8A6] to-[#0FA1B2] mb-4"></div>
-                <div className="h-0.5 w-8 bg-[#14B8A6] mb-4"></div>
-                <h4 className="font-serif text-2xl font-bold text-[#0B0F13] mb-3">VIP Experiences</h4>
-                <p className="font-sans text-[#4B5563] leading-relaxed mb-4 text-sm">
-                  Premium services for special occasions and elevated care.
-                </p>
-                <ul className="space-y-1.5">
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>House Calls: Travel fee starts at $100</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Emergency Appointment: Starts at $50</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Bridal Loc Package</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Birthday Package</span>
-                  </li>
-                  <li className="font-sans text-sm text-[#4B5563] flex items-start">
-                    <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>Photoshoot Ready Package</span>
-                  </li>
-                </ul>
-              </div>
+          <div className="mb-10 reveal-on-scroll">
+            <div className="mx-auto max-w-4xl rounded-2xl border border-[#14B8A6]/35 bg-gradient-to-r from-[#0B0F13] via-[#101821] to-[#0B0F13] px-6 py-5 shadow-[0_16px_35px_rgba(4,10,16,0.45)]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#14B8A6]">
+                Reserve Your Appointment
+              </p>
+              <p className="mt-2 font-sans text-sm leading-relaxed text-[#D1D5DB]">
+                A $25 deposit is required to secure your appointment and is applied toward your final service total.
+              </p>
+              <div className="mt-4 h-px w-full bg-gradient-to-r from-transparent via-[#14B8A6]/40 to-transparent" aria-hidden="true"></div>
             </div>
-
-            <p className="font-sans text-sm text-[#9CA3AF] italic mt-8 text-center md:text-left">
-              All prices listed are starting prices. Final pricing is based on hair length, density, condition, product buildup, repairs needed, and the time required to complete your service.
-            </p>
           </div>
 
-          {/* FINAL NOTES */}
-          <div className="reveal-on-scroll">
-            <div className="bg-white rounded-xl border-2 border-[#14B8A6]/40 border-t-4 border-t-[#14B8A6] p-8 md:p-10">
-              <p className="font-sans text-base md:text-lg text-[#4B5563] leading-relaxed max-w-4xl mx-auto text-center">
-                I aim to provide a calm, professional, and supportive experience for every client. My goal is not just styling, but long term loc health, comfort, and confidence. If you are unsure which service to book, I recommend starting with a consultation or tour so we can align on expectations before your appointment.
-              </p>
+          {/* SERVICES CATEGORY CARDS */}
+          <div className="mb-20 reveal-on-scroll">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 auto-rows-fr">
+              {serviceCards.map((card) => (
+                <ServiceCard key={card.title} {...card} />
+              ))}
             </div>
           </div>
         </div>
-        </section>
+      </section>
 
       {/* GALLERY SECTION */}
       <section id="gallery" className="py-20 md:py-32 bg-[#0B0F13] text-[#F9FAFB] relative">
@@ -750,7 +693,7 @@ export default function Home() {
                   </li>
                   <li className="font-sans text-sm text-[#9CA3AF] leading-relaxed flex items-start">
                     <span className="text-[#14B8A6] mr-2 mt-1.5">•</span>
-                    <span>No extra guests or children unless they are receiving a service (we do accept walk-ins)</span>
+                    <span>No extra guests or children unless they are receiving a service</span>
                   </li>
                 </ul>
             </div>
@@ -1167,7 +1110,7 @@ export default function Home() {
                 </span>
               </summary>
               <p className="mt-4 font-sans text-[#9CA3AF] leading-relaxed">
-                New clients should select "New Client Consultation" when booking. You'll be asked to upload photos or a short video of your hair so Nya can see your hair texture and condition. After reviewing your photos/video, Nya will recommend the best service for you.
+                New clients should select "Traditional Loc Consultation" when booking. You'll be asked to upload photos or a short video of your hair so Nya can see your hair texture and condition. After reviewing your photos/video, Nya will recommend the best service for you.
               </p>
             </details>
 
