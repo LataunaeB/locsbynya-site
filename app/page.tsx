@@ -32,31 +32,31 @@ type ServiceCardData = {
   services: string[];
   pricingText?: string;
   pricingItems?: string[];
-  pricingDisclaimer?: string;
+  useLengthPriceGrid?: boolean;
   pricingNote?: string;
 };
 
 const serviceCards: ServiceCardData[] = [
   {
     title: 'Start Your Loc Journey',
-    description: 'Ideal for new clients beginning or planning their loc journey.',
+    description: 'Ideal for beginning your loc journey with expert guidance.',
     services: [
       'Starter Locs: Comb Coil or Two-Strand Twist',
       'Instant Locs',
       'Traditional Loc Consultation',
     ],
-    pricingText: 'Length-based starting prices',
+    pricingText: 'Verified length-based rates',
     pricingItems: [
       'Short: $175+',
       'Medium: $225+',
       'Long: $300+',
       'XL: $400+',
     ],
-    pricingDisclaimer: 'Final pricing may vary based on length, density, loc count, condition, repairs, styling, and service time.',
+    useLengthPriceGrid: true,
   },
   {
     title: 'Signature Maintenance',
-    description: 'Designed for consistent upkeep, shape, and long-term loc health.',
+    description: 'Routine maintenance for neat roots, shape, and healthy growth.',
     services: [
       'Signature Retwist',
       'Retwist + Style',
@@ -64,18 +64,18 @@ const serviceCards: ServiceCardData[] = [
       'Detox + Retwist',
       'Retwist Membership',
     ],
-    pricingText: 'Length-based starting prices',
+    pricingText: 'Verified length-based rates',
     pricingItems: [
       'Short: $175+',
       'Medium: $225+',
       'Long: $300+',
       'XL: $400+',
     ],
-    pricingDisclaimer: 'Final pricing may vary based on length, density, loc count, condition, repairs, styling, and service time.',
+    useLengthPriceGrid: true,
   },
   {
     title: 'Loc Restoration',
-    description: 'Restoration-focused care for repair, structural support, and rebuilding.',
+    description: 'Restoration-focused services for repair, support, and rebuilding.',
     services: [
       'Loc Repair',
       'Broken Loc Repair',
@@ -85,18 +85,18 @@ const serviceCards: ServiceCardData[] = [
       'Loc Reconstruction',
       'Loc Take Down & Detangle',
     ],
-    pricingText: 'Length-based starting prices',
+    pricingText: 'Verified length-based rates',
     pricingItems: [
       'Short: $175+',
       'Medium: $225+',
       'Long: $300+',
       'XL: $400+',
     ],
-    pricingDisclaimer: 'Final pricing may vary based on length, density, loc count, condition, repairs, styling, and service time.',
+    useLengthPriceGrid: true,
   },
   {
     title: 'Hair Wellness',
-    description: 'Scalp-first treatments to nourish hair and support healthy growth.',
+    description: 'Scalp-first treatments that support healthy hair and moisture balance.',
     services: [
       'Scalp Detox',
       'Deep Cleansing Detox',
@@ -110,7 +110,7 @@ const serviceCards: ServiceCardData[] = [
   },
   {
     title: 'VIP Experiences',
-    description: 'Concierge-level appointment options for elevated and time-sensitive needs.',
+    description: 'Concierge options for elevated and time-sensitive appointment needs.',
     services: [
       'House Call',
       'Emergency Appointment',
@@ -122,7 +122,7 @@ const serviceCards: ServiceCardData[] = [
   },
   {
     title: 'Add-ons & Extras',
-    description: 'Optional upgrades you can add to personalize your appointment.',
+    description: 'Optional upgrades to personalize and elevate your service.',
     services: [
       'Loc Detox',
       'Loc Oil Treatment',
@@ -152,48 +152,70 @@ function ServiceCard({
   services,
   pricingText,
   pricingItems,
-  pricingDisclaimer,
+  useLengthPriceGrid,
   pricingNote,
 }: ServiceCardData) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const hasMoreServices = services.length > 3;
+  const visibleServices = isExpanded ? services : services.slice(0, 3);
+
   return (
-    <article className="flex h-full flex-col rounded-2xl border border-[#14B8A6]/30 bg-white p-6 md:p-7 shadow-[0_18px_40px_rgba(11,15,19,0.08)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#14B8A6]/60 hover:shadow-[0_24px_50px_rgba(20,184,166,0.14)]">
+    <article className="flex h-full flex-col rounded-2xl border border-[#14B8A6]/30 bg-white p-5 md:p-6 shadow-[0_18px_40px_rgba(11,15,19,0.08)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#14B8A6]/60 hover:shadow-[0_24px_50px_rgba(20,184,166,0.14)]">
       <div className="h-1 w-20 rounded-full bg-gradient-to-r from-[#14B8A6] to-[#0FA1B2]" />
-      <div className="flex flex-1 flex-col pt-4">
+      <div className="flex flex-1 flex-col pt-3">
         <div>
-          <h3 className="font-serif text-[1.65rem] font-bold leading-tight text-[#0B0F13]">{title}</h3>
-          <p className="mt-3 font-sans text-sm leading-relaxed text-[#4B5563]">{description}</p>
-          <ul className="mt-5 space-y-2.5">
-            {services.map((service) => (
+          <h3 className="font-serif text-[1.5rem] font-bold leading-tight text-[#0B0F13]">{title}</h3>
+          <p className="mt-2 font-sans text-sm leading-relaxed text-[#4B5563]">{description}</p>
+          <ul className="mt-4 space-y-2">
+            {visibleServices.map((service) => (
               <li key={service} className="flex items-start gap-3 font-sans text-sm leading-relaxed text-[#4B5563]">
-                <span className="mt-1.5 text-[#14B8A6]">•</span>
+                <span className="mt-1 text-[#14B8A6]">•</span>
                 <span>{service}</span>
               </li>
             ))}
           </ul>
+          {hasMoreServices && (
+            <button
+              type="button"
+              onClick={() => setIsExpanded((prev) => !prev)}
+              className="mt-3 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#14B8A6] transition-colors hover:text-[#0FA1B2]"
+            >
+              {isExpanded ? 'Show less' : 'View full menu'}
+            </button>
+          )}
         </div>
 
-        <div className="mt-auto pt-6">
-          <div className="border-t border-[#14B8A6]/20 pt-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-[#14B8A6]">Pricing</p>
+        <div className="mt-auto pt-5">
+          <div className="border-t border-[#14B8A6]/20 pt-3.5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-[#14B8A6]">Starting Prices</p>
             {pricingText && (
-              <p className="mt-2 text-sm font-semibold leading-relaxed text-[#0B0F13]">{pricingText}</p>
+              <p className="mt-2 text-xs font-semibold leading-relaxed text-[#0B0F13]">{pricingText}</p>
             )}
             {pricingItems && (
-              <div className="mt-2 space-y-1.5">
-                {pricingItems.map((item) => (
-                  <p key={item} className="text-sm leading-relaxed text-[#0B0F13]">
-                    {item}
-                  </p>
-                ))}
-              </div>
+              useLengthPriceGrid ? (
+                <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {pricingItems.map((item) => {
+                    const [label, value] = item.split(': ');
+                    return (
+                      <div key={item} className="rounded-lg border border-[#14B8A6]/20 bg-[#F9FAFB] px-2.5 py-2 text-center">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#4B5563]">{label}</p>
+                        <p className="mt-1 text-sm font-semibold text-[#0B0F13]">{value}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="mt-2 space-y-1.5">
+                  {pricingItems.map((item) => (
+                    <p key={item} className="text-sm leading-relaxed text-[#0B0F13]">
+                      {item}
+                    </p>
+                  ))}
+                </div>
+              )
             )}
             {pricingNote && (
               <p className="mt-2 text-xs leading-relaxed text-[#4B5563]">{pricingNote}</p>
-            )}
-            {pricingDisclaimer && (
-              <p className="mt-3 text-[11px] leading-relaxed text-[#6B7280]">
-                {pricingDisclaimer}
-              </p>
             )}
           </div>
         </div>
@@ -623,11 +645,14 @@ export default function Home() {
 
           {/* SERVICES CATEGORY CARDS */}
           <div className="mb-20 reveal-on-scroll">
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 auto-rows-fr">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
               {serviceCards.map((card) => (
                 <ServiceCard key={card.title} {...card} />
               ))}
             </div>
+            <p className="mx-auto mt-6 max-w-5xl text-center text-xs leading-relaxed text-[#9CA3AF]">
+              All listed prices are starting prices. Final pricing may vary based on length, density, loc count, condition, buildup, repairs, styling, and service time.
+            </p>
           </div>
         </div>
       </section>
