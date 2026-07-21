@@ -67,6 +67,8 @@ export default function Home() {
 
   const isNewClient = formData.clientType === "new";
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
@@ -75,6 +77,8 @@ export default function Home() {
       alert('New clients must upload photos/video of their hair so Nya can see your hair texture and condition.');
       return;
     }
+
+    setIsSubmitting(true);
 
     try {
       // Create FormData to handle file uploads
@@ -87,44 +91,38 @@ export default function Home() {
       formDataToSend.append('email', formData.email);
       formDataToSend.append('phone', formData.phone);
       formDataToSend.append('notes', formData.notes || '');
-      formDataToSend.append('hasFiles', hairFiles && hairFiles.length > 0 ? 'true' : 'false');
       formDataToSend.append('addOns', JSON.stringify(addOns));
 
-      // Append all files
       if (hairFiles) {
         for (let i = 0; i < hairFiles.length; i++) {
           formDataToSend.append('hairFiles', hairFiles[i]);
         }
       }
 
-      const response = await fetch('/api/book', {
+      const response = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
         body: formDataToSend,
       });
 
-      if (response.ok) {
-        alert('Appointment confirmed! You will receive a confirmation email shortly.');
-        // Reset form
-      setFormData({
-          clientType: "",
-          service: "",
-          date: "",
-          timeWindow: "",
-        name: "",
-        email: "",
-        phone: "",
-          notes: "",
-        });
-        setAddOns([]);
-        setDepositAgreed(false);
-        setHairFiles(null);
-      } else {
+      if (!response.ok) {
         const error = await response.json();
-        alert(`Error: ${error.message || 'Failed to confirm appointment'}`);
+        alert(`Error: ${error.message || 'Failed to initiate payment.'}`);
+        setIsSubmitting(false);
+        return;
       }
+
+      const data = await response.json();
+      if (data.url) {
+        window.location.assign(data.url);
+        return;
+      }
+
+      alert('Unable to redirect to Stripe checkout. Please try again.');
     } catch (error) {
       console.error('Error submitting form:', error);
       alert('An error occurred. Please try again or contact us directly.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1119,10 +1117,10 @@ export default function Home() {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                disabled={!depositAgreed}
-                className="w-full bg-gradient-to-r from-[#4B2B1A] to-[#8B5A3C] text-white rounded-2xl px-6 py-3 font-semibold font-sans hover:shadow-lg hover:shadow-[#8B5A3C]/30 transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#8B5A3C] focus:ring-offset-2 focus:ring-offset-[#0B0F13] disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
+                  disabled={!depositAgreed || isSubmitting}
+                  className="w-full bg-gradient-to-r from-[#4B2B1A] to-[#8B5A3C] text-white rounded-2xl px-6 py-3 font-semibold font-sans hover:shadow-lg hover:shadow-[#8B5A3C]/30 transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#8B5A3C] focus:ring-offset-2 focus:ring-offset-[#0B0F13] disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
                 >
-                Continue to Details
+                  {isSubmitting ? 'Redirecting to checkout...' : 'Continue to Checkout'}
                 </button>
 
               {/* Fine Print */}
