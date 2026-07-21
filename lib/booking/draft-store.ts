@@ -52,6 +52,7 @@ export async function saveBookingDraft(
     access: 'private',
     contentType: 'application/json',
     addRandomSuffix: false,
+    allowOverwrite: true,
   });
 
   return draft;

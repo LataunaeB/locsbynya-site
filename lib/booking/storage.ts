@@ -10,6 +10,7 @@ export async function saveBookingDraft(draft: PendingBookingDraft): Promise<Stor
   const blob = await put(`bookings/drafts/${draft.id}.json`, JSON.stringify(draft), {
     access: 'private',
     contentType: 'application/json',
+    allowOverwrite: true,
   });
 
   return {
