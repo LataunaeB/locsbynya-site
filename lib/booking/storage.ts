@@ -22,6 +22,7 @@ export async function updateBookingDraft(draftPath: string, draft: PendingBookin
   const blob = await put(draftPath, JSON.stringify(draft), {
     access: 'private',
     contentType: 'application/json',
+    allowOverwrite: true,
   });
 
   return blob.downloadUrl || blob.url;

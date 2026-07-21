@@ -88,11 +88,17 @@ export async function markDraftEmailsSent(bookingId: string): Promise<void> {
   }
 
   draft.emailsSent = true;
+  draft.completedAt = draft.completedAt ?? new Date().toISOString();
   await put(manifestPath(bookingId), JSON.stringify(draft), {
     access: 'private',
     contentType: 'application/json',
     addRandomSuffix: false,
+    allowOverwrite: true,
   });
+}
+
+export function isBookingDraftCompleted(draft: BookingDraft): boolean {
+  return Boolean(draft.completedAt || draft.emailsSent);
 }
 
 export async function loadDraftAttachments(
@@ -160,5 +166,6 @@ export async function markStripeEventProcessed(eventId: string): Promise<void> {
     access: 'private',
     contentType: 'application/json',
     addRandomSuffix: false,
+    allowOverwrite: true,
   });
 }

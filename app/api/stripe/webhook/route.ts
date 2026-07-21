@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import {
   deleteBookingDraft,
   draftToValidatedBooking,
+  isBookingDraftCompleted,
   isStripeEventProcessed,
   loadBookingDraft,
   loadDraftAttachments,
@@ -83,7 +84,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Booking draft not found.' }, { status: 404 });
     }
 
-    if (draft.emailsSent) {
+    if (isBookingDraftCompleted(draft)) {
       await markStripeEventProcessed(event.id);
       return NextResponse.json({ received: true });
     }
@@ -93,8 +94,8 @@ export async function POST(request: NextRequest) {
 
     await sendBookingEmails(booking, attachments);
     await markDraftEmailsSent(bookingId);
-    await deleteBookingDraft(bookingId);
     await markStripeEventProcessed(event.id);
+    await deleteBookingDraft(bookingId);
 
     return NextResponse.json({ received: true });
   } catch (error) {

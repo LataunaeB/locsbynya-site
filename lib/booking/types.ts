@@ -21,6 +21,7 @@ export type StoredFileRef = {
 export type BookingDraft = {
   id: string;
   createdAt: string;
+  completedAt?: string;
   clientType: string;
   service: string;
   date: string;
