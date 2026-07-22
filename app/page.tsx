@@ -30,11 +30,10 @@ type ServiceCardData = {
   title: string;
   description: string;
   services: string[];
-  pricingText?: string;
   pricingItems?: string[];
   useLengthPriceGrid?: boolean;
-  pricingNote?: string;
   hidePricingSection?: boolean;
+  collapsedCount?: number;
 };
 
 const serviceCards: ServiceCardData[] = [
@@ -46,7 +45,6 @@ const serviceCards: ServiceCardData[] = [
       'Instant Locs',
       'Traditional Loc Consultation',
     ],
-    pricingText: 'Verified length-based rates',
     pricingItems: [
       'Short: $175+',
       'Medium: $225+',
@@ -65,7 +63,6 @@ const serviceCards: ServiceCardData[] = [
       'Detox + Retwist',
       'Retwist Membership',
     ],
-    pricingText: 'Verified length-based rates',
     pricingItems: [
       'Short: $175+',
       'Medium: $225+',
@@ -86,12 +83,11 @@ const serviceCards: ServiceCardData[] = [
       'Loc Reconstruction',
       'Loc Take Down & Detangle',
     ],
-    pricingText: 'Loc Take Down & Detangle',
     pricingItems: [
-      'Short: Starting at $175',
-      'Medium: Starting at $225',
-      'Long: Starting at $300',
-      'XL: Starting at $400',
+      'Short: $175+',
+      'Medium: $225+',
+      'Long: $300+',
+      'XL: $400+',
     ],
     useLengthPriceGrid: true,
   },
@@ -105,6 +101,7 @@ const serviceCards: ServiceCardData[] = [
       'Precision Trim - $25',
     ],
     hidePricingSection: true,
+    collapsedCount: 4,
   },
   {
     title: 'VIP Experiences',
@@ -138,75 +135,76 @@ function ServiceCard({
   title,
   description,
   services,
-  pricingText,
   pricingItems,
   useLengthPriceGrid,
-  pricingNote,
   hidePricingSection,
+  collapsedCount,
 }: ServiceCardData) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const hasMoreServices = services.length > 3;
-  const visibleServices = isExpanded ? services : services.slice(0, 3);
+  const collapsedVisibleCount = collapsedCount ?? 3;
+  const hasMoreServices = services.length > collapsedVisibleCount;
+  const visibleServices = isExpanded ? services : services.slice(0, collapsedVisibleCount);
 
   return (
-    <article className="flex h-full flex-col rounded-2xl border border-[#14B8A6]/30 bg-white p-5 md:p-6 shadow-[0_18px_40px_rgba(11,15,19,0.08)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#14B8A6]/60 hover:shadow-[0_24px_50px_rgba(20,184,166,0.14)]">
+    <article className="rounded-2xl border border-[#14B8A6]/30 bg-white p-4 sm:p-5 md:p-6 shadow-[0_18px_40px_rgba(11,15,19,0.08)] transition-all duration-300 md:hover:-translate-y-0.5 md:hover:border-[#14B8A6]/60 md:hover:shadow-[0_24px_50px_rgba(20,184,166,0.14)]">
       <div className="h-1 w-20 rounded-full bg-gradient-to-r from-[#14B8A6] to-[#0FA1B2]" />
-      <div className="flex flex-1 flex-col pt-3">
-        <div>
-          <h3 className="font-serif text-[1.5rem] font-bold leading-tight text-[#0B0F13]">{title}</h3>
-          <p className="mt-2 font-sans text-sm leading-relaxed text-[#4B5563]">{description}</p>
-          <ul className="mt-4 space-y-2">
-            {visibleServices.map((service) => (
-              <li key={service} className="flex items-start gap-3 font-sans text-sm leading-relaxed text-[#4B5563]">
-                <span className="mt-1 text-[#14B8A6]">•</span>
-                <span>{service}</span>
-              </li>
-            ))}
-          </ul>
-          {hasMoreServices && (
-            <button
-              type="button"
-              onClick={() => setIsExpanded((prev) => !prev)}
-              className="mt-3 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#14B8A6] transition-colors hover:text-[#0FA1B2]"
-            >
-              {isExpanded ? 'Show less' : 'View full menu'}
-            </button>
-          )}
-        </div>
+      <div className="pt-3">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#14B8A6]">Service Category</p>
+        <h3 className="mt-2 font-serif text-[1.5rem] font-bold leading-tight text-[#0B0F13]">{title}</h3>
+        <p
+          className="mt-2 font-sans text-sm italic leading-[1.55] text-[#7A6256]"
+          style={{
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}
+        >
+          {description}
+        </p>
 
-        {!hidePricingSection && (
-          <div className="mt-auto pt-5">
-            <div className="border-t border-[#14B8A6]/20 pt-3.5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-[#14B8A6]">Starting Prices</p>
-              {pricingText && (
-                <p className="mt-2 text-xs font-semibold leading-relaxed text-[#0B0F13]">{pricingText}</p>
-              )}
-              {pricingItems && (
-                useLengthPriceGrid ? (
-                  <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    {pricingItems.map((item) => {
-                      const [label, value] = item.split(': ');
-                      return (
-                        <div key={item} className="rounded-lg border border-[#14B8A6]/20 bg-[#F9FAFB] px-2.5 py-2 text-center">
-                          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#4B5563]">{label}</p>
-                          <p className="mt-1 text-sm font-semibold text-[#0B0F13]">{value}</p>
-                        </div>
-                      );
-                    })}
+        <ul className="mt-4">
+          {visibleServices.map((service) => {
+            const [name, ...priceParts] = service.split(' - ');
+            const price = priceParts.join(' - ').trim();
+
+            return (
+              <li key={service} className="border-b border-[#14B8A6]/14 py-2.5 first:pt-0 last:border-b-0 last:pb-0">
+                <div className="flex items-start justify-between gap-3">
+                  <span className="font-sans text-sm leading-relaxed text-[#374151]">{name}</span>
+                  {price && (
+                    <span className="shrink-0 text-sm font-semibold leading-relaxed text-[#0B0F13]">{price}</span>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+
+        {hasMoreServices && (
+          <button
+            type="button"
+            onClick={() => setIsExpanded((prev) => !prev)}
+            className="mt-3 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#14B8A6] transition-colors hover:text-[#0FA1B2]"
+          >
+            {isExpanded ? 'Show Less' : 'View Full Menu'}
+          </button>
+        )}
+
+        {!hidePricingSection && useLengthPriceGrid && pricingItems && (
+          <div className="mt-4 border-t border-[#14B8A6]/20 pt-3.5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-[#14B8A6]">Starting by Length</p>
+            <div className="mt-2 grid grid-cols-2 gap-2 md:grid-cols-4">
+              {pricingItems.map((item) => {
+                const [label, value] = item.split(': ');
+
+                return (
+                  <div key={item} className="rounded-lg border border-[#14B8A6]/20 bg-[#F9FAFB] px-2.5 py-2 text-center">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#4B5563]">{label}</p>
+                    <p className="mt-1 text-sm font-semibold text-[#0B0F13]">{value}</p>
                   </div>
-                ) : (
-                  <div className="mt-2 space-y-1.5">
-                    {pricingItems.map((item) => (
-                      <p key={item} className="text-sm leading-relaxed text-[#0B0F13]">
-                        {item}
-                      </p>
-                    ))}
-                  </div>
-                )
-              )}
-              {pricingNote && (
-                <p className="mt-2 text-xs leading-relaxed text-[#4B5563]">{pricingNote}</p>
-              )}
+                );
+              })}
             </div>
           </div>
         )}
@@ -620,6 +618,9 @@ export default function Home() {
             <p className="font-sans text-lg text-[#9CA3AF] max-w-3xl mx-auto leading-relaxed">
               My work is centered on scalp health, clean parting, and styles that mature beautifully over time. Each category below is organized for fast, clear scanning on any screen.
             </p>
+            <p className="mt-3 font-sans text-sm text-[#9CA3AF] max-w-3xl mx-auto leading-relaxed">
+              Service inclusions vary. Please review your selected service details or contact Nya with questions.
+            </p>
           </header>
 
           <div className="mb-10 reveal-on-scroll">
@@ -636,7 +637,7 @@ export default function Home() {
 
           {/* SERVICES CATEGORY CARDS */}
           <div className="mb-20 reveal-on-scroll">
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2 xl:grid-cols-3">
               {serviceCards.map((card) => (
                 <ServiceCard key={card.title} {...card} />
               ))}
