@@ -22,6 +22,10 @@ import {
   hairLengthLabels,
   hairLengthStartingPrices,
   LENGTH_PRICED_SERVICE_IDS,
+  MAX_RESTORATION_LOC_COUNT,
+  RESTORATION_MINIMUM_APPOINTMENT_TOTAL,
+  RESTORATION_SERVICE_IDS,
+  RESTORATION_STARTING_PRICE_PER_LOC,
   serviceCategories,
   serviceNames,
 } from "@/lib/booking/constants";
@@ -40,6 +44,7 @@ type ServiceCardData = {
   description: string;
   services: string[];
   pricingItems?: string[];
+  pricingNote?: string;
   useLengthPriceGrid?: boolean;
   hidePricingSection?: boolean;
   collapsedCount?: number;
@@ -81,8 +86,8 @@ const serviceCards: ServiceCardData[] = [
     useLengthPriceGrid: true,
   },
   {
-    title: 'Loc Restoration',
-    description: 'Restoration-focused services for repair, support, and rebuilding.',
+    title: 'Loc Restoration & Repair',
+    description: 'Individual loc repairs, reattachments, and restoration services.',
     services: [
       'Loc Repair',
       'Broken Loc Repair',
@@ -90,15 +95,11 @@ const serviceCards: ServiceCardData[] = [
       'Root Reattachment',
       'Wick Repair',
       'Loc Reconstruction',
-      'Loc Take Down & Detangle',
     ],
-    pricingItems: [
-      'Short: $175+',
-      'Medium: $225+',
-      'Long: $300+',
-      'XL: $400+',
-    ],
-    useLengthPriceGrid: true,
+    pricingNote:
+      'Individual loc repairs, reattachments, and restoration services start at $15 per loc. A $25 minimum appointment total applies. Final pricing is based on the number of locs, length, condition, repair method, and time required. Your $25 booking deposit is applied toward your final service total.',
+    hidePricingSection: true,
+    collapsedCount: 6,
   },
   {
     title: 'Hair Wellness',
@@ -108,9 +109,12 @@ const serviceCards: ServiceCardData[] = [
       'Protein Treatment - $30',
       'Moisture Treatment - $25',
       'Precision Trim - $25',
+      'Loc Take Down & Detangle - Starting at $200+',
     ],
+    pricingNote:
+      'Final pricing is based on loc length, density, buildup, condition, and estimated service time.',
     hidePricingSection: true,
-    collapsedCount: 4,
+    collapsedCount: 5,
   },
   {
     title: 'VIP Experiences',
@@ -145,6 +149,7 @@ function ServiceCard({
   description,
   services,
   pricingItems,
+  pricingNote,
   useLengthPriceGrid,
   hidePricingSection,
   collapsedCount,
@@ -190,6 +195,10 @@ function ServiceCard({
           })}
         </ul>
 
+        {pricingNote && (
+          <p className="mt-4 text-xs leading-relaxed text-[#7A6256]">{pricingNote}</p>
+        )}
+
         {hasMoreServices && (
           <button
             type="button"
@@ -230,6 +239,13 @@ export default function Home() {
     clientType: "",
     service: "",
     hairLength: "",
+    takeDownLocLength: "",
+    takeDownDensity: "",
+    takeDownInstalled: "",
+    takeDownNotes: "",
+    restorationLocCount: "",
+    restorationLength: "",
+    restorationDescription: "",
     date: "",
     timeWindow: "",
     name: "",
@@ -247,10 +263,19 @@ export default function Home() {
     const { name, value } = e.target;
     setFormData((current) => {
       if (name === "service") {
+        const isRestorationService = RESTORATION_SERVICE_IDS.has(value);
+        const isTakeDownDetangle = value === 'loc-take-down-detangle';
         return {
           ...current,
           service: value,
           hairLength: LENGTH_PRICED_SERVICE_IDS.has(value) ? current.hairLength : "",
+          takeDownLocLength: isTakeDownDetangle ? current.takeDownLocLength : "",
+          takeDownDensity: isTakeDownDetangle ? current.takeDownDensity : "",
+          takeDownInstalled: isTakeDownDetangle ? current.takeDownInstalled : "",
+          takeDownNotes: isTakeDownDetangle ? current.takeDownNotes : "",
+          restorationLocCount: isRestorationService ? current.restorationLocCount : "",
+          restorationLength: isRestorationService ? current.restorationLength : "",
+          restorationDescription: isRestorationService ? current.restorationDescription : "",
         };
       }
 
@@ -278,27 +303,52 @@ export default function Home() {
   const isNewClient = formData.clientType === "new";
   const selectedServiceName = serviceNames[formData.service] ?? "";
   const selectedServiceCategory = serviceCategories[formData.service] ?? "";
+  const selectedServiceIsRestoration = RESTORATION_SERVICE_IDS.has(formData.service);
+  const selectedServiceIsTakeDownDetangle = formData.service === 'loc-take-down-detangle';
   const selectedServiceRequiresLength = LENGTH_PRICED_SERVICE_IDS.has(formData.service);
   const selectedHairLengthLabel = formData.hairLength
     ? hairLengthLabels[formData.hairLength]
+    : "";
+  const selectedTakeDownLocLengthLabel = formData.takeDownLocLength
+    ? hairLengthLabels[formData.takeDownLocLength]
+    : "";
+  const selectedRestorationLengthLabel = formData.restorationLength
+    ? hairLengthLabels[formData.restorationLength]
     : "";
   const selectedStartingPrice = selectedServiceRequiresLength
     ? formData.hairLength
       ? hairLengthStartingPrices[formData.hairLength]
       : ""
-    : fixedServiceStartingPrices[formData.service] ?? "";
+    : selectedServiceIsTakeDownDetangle
+      ? fixedServiceStartingPrices[formData.service] ?? ""
+      : selectedServiceIsRestoration
+      ? RESTORATION_STARTING_PRICE_PER_LOC
+      : fixedServiceStartingPrices[formData.service] ?? "";
   const selectedAddOnLabels = addOns.map((addOnId) => addOnNames[addOnId] ?? addOnId);
   const showBookingSummary = Boolean(formData.service);
   const isVipService = selectedServiceCategory === "VIP Experiences";
+  const selectedRestorationLocCount = formData.restorationLocCount.trim();
+  const selectedTakeDownSummary = {
+    locLength: formData.takeDownLocLength.trim(),
+    density: formData.takeDownDensity.trim(),
+    installed: formData.takeDownInstalled.trim(),
+    notes: formData.takeDownNotes.trim(),
+  };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
-    // Validate new client requirements: must upload photos/videos
-    if (isNewClient && !hairFiles) {
-      alert('New clients must upload photos/video of their hair so Nya can see your hair texture and condition.');
+
+    const serviceRequiresPhotos = isNewClient || selectedServiceIsRestoration || selectedServiceIsTakeDownDetangle;
+
+    // Validate photo uploads: required for new clients and service-specific reviews
+    if (serviceRequiresPhotos && !hairFiles) {
+      alert(selectedServiceIsRestoration
+        ? 'Restoration bookings require photos of the locs needing repair so Nya can review the condition and determine the work needed.'
+        : selectedServiceIsTakeDownDetangle
+        ? 'Loc Take Down & Detangle bookings require photos of the locs so Nya can review length, density, buildup, and overall condition.'
+        : 'New clients must upload photos/video of their hair so Nya can see your hair texture and condition.');
       return;
     }
 
@@ -311,8 +361,15 @@ export default function Home() {
       formDataToSend.append('service', formData.service);
       formDataToSend.append('serviceCategory', selectedServiceCategory);
       formDataToSend.append('hairLength', selectedServiceRequiresLength ? formData.hairLength : '');
+      formDataToSend.append('takeDownLocLength', selectedServiceIsTakeDownDetangle ? formData.takeDownLocLength : '');
+      formDataToSend.append('takeDownDensity', selectedServiceIsTakeDownDetangle ? formData.takeDownDensity : '');
+      formDataToSend.append('takeDownInstalled', selectedServiceIsTakeDownDetangle ? formData.takeDownInstalled : '');
+      formDataToSend.append('takeDownNotes', selectedServiceIsTakeDownDetangle ? formData.takeDownNotes : '');
+      formDataToSend.append('restorationLocCount', selectedServiceIsRestoration ? formData.restorationLocCount : '');
+      formDataToSend.append('restorationLength', selectedServiceIsRestoration ? formData.restorationLength : '');
+      formDataToSend.append('restorationDescription', selectedServiceIsRestoration ? formData.restorationDescription : '');
       formDataToSend.append('startingPriceTier', selectedStartingPrice);
-      formDataToSend.append('depositAmount', '25');
+      formDataToSend.append('depositAmount', String(RESTORATION_MINIMUM_APPOINTMENT_TOTAL));
       formDataToSend.append('date', formData.date);
       formDataToSend.append('timeWindow', formData.timeWindow);
       formDataToSend.append('name', formData.name);
@@ -842,20 +899,20 @@ export default function Home() {
                     <option value="detox-retwist">Detox + Retwist</option>
                     <option value="retwist-membership">Retwist Membership</option>
                   </optgroup>
-                  <optgroup label="Loc Restoration">
+                  <optgroup label="Loc Restoration & Repair">
                     <option value="loc-repair">Loc Repair</option>
                     <option value="broken-loc-repair">Broken Loc Repair</option>
                     <option value="reattachment">Reattachment</option>
                     <option value="root-reattachment">Root Reattachment</option>
                     <option value="wick-repair">Wick Repair</option>
                     <option value="loc-reconstruction">Loc Reconstruction</option>
-                    <option value="loc-take-down-detangle">Loc Take Down &amp; Detangle</option>
                   </optgroup>
                   <optgroup label="Hair Wellness">
                     <option value="deep-cleansing-detox">Deep Cleansing Detox - $35</option>
                     <option value="protein-treatment">Protein Treatment - $30</option>
                     <option value="moisture-treatment">Moisture Treatment - $25</option>
                     <option value="precision-trim">Precision Trim - $25</option>
+                    <option value="loc-take-down-detangle">Loc Take Down &amp; Detangle - Starting at $200+</option>
                   </optgroup>
                   <optgroup label="VIP Experiences">
                     <option value="same-day-appointment">Same-Day Appointment - $40</option>
@@ -865,6 +922,172 @@ export default function Home() {
                   </optgroup>
                 </select>
               </div>
+
+              {selectedServiceIsRestoration && (
+                <div className="rounded-2xl border border-[#14B8A6]/20 bg-[#F8FAFC] p-5">
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#14B8A6]">
+                        Restoration Service Needed
+                      </p>
+                      <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">
+                        {selectedServiceName}
+                      </p>
+                    </div>
+
+                    <div>
+                      <label htmlFor="restorationLocCount" className="block text-sm font-semibold text-[#0B0F13] mb-2 font-sans uppercase tracking-wide">
+                        Estimated Number of Locs
+                      </label>
+                      <input
+                        type="number"
+                        id="restorationLocCount"
+                        name="restorationLocCount"
+                        min={1}
+                        max={MAX_RESTORATION_LOC_COUNT}
+                        step={1}
+                        required={selectedServiceIsRestoration}
+                        value={formData.restorationLocCount}
+                        onChange={handleChange}
+                        placeholder="1"
+                        className="w-full px-4 py-3 rounded-lg border border-[#14B8A6]/35 bg-white text-[#0B0F13] placeholder-[#7A4B27]/60 font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 focus:border-[#14B8A6] transition-colors"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="restorationLength" className="block text-sm font-semibold text-[#0B0F13] mb-2 font-sans uppercase tracking-wide">
+                        Approximate Loc Length
+                      </label>
+                      <select
+                        id="restorationLength"
+                        name="restorationLength"
+                        required={selectedServiceIsRestoration}
+                        value={formData.restorationLength}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 rounded-lg border border-[#14B8A6]/35 bg-white text-[#0B0F13] font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 focus:border-[#14B8A6] transition-colors"
+                      >
+                        <option value="">Select approximate length</option>
+                        {hairLengthOptions.map((length) => (
+                          <option key={length} value={length}>
+                            {hairLengthLabels[length]}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="mt-2 text-xs leading-relaxed text-[#7A4B27]">
+                        Descriptive only. This does not set a full-head price tier.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label htmlFor="restorationDescription" className="block text-sm font-semibold text-[#0B0F13] mb-2 font-sans uppercase tracking-wide">
+                        Description of Repair Needed
+                      </label>
+                      <textarea
+                        id="restorationDescription"
+                        name="restorationDescription"
+                        rows={4}
+                        required={selectedServiceIsRestoration}
+                        value={formData.restorationDescription}
+                        onChange={handleChange}
+                        placeholder="Briefly explain what is broken, detached, thinning, damaged, or needing restoration."
+                        className="w-full px-4 py-3 rounded-lg border border-[#14B8A6]/35 bg-white text-[#0B0F13] placeholder-[#7A4B27]/60 font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 focus:border-[#14B8A6] transition-colors resize-none"
+                      />
+                    </div>
+
+                    <p className="text-sm leading-relaxed text-[#4B5563]">
+                      Your $25 booking deposit is applied toward your final service total. Loc Restoration appointments have a $25 minimum total. Final pricing is based on the number of locs, length, condition, repair method, and time required.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {selectedServiceIsTakeDownDetangle && (
+                <div className="rounded-2xl border border-[#14B8A6]/20 bg-[#F8FAFC] p-5">
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#14B8A6]">
+                        Hair Wellness Service Needed
+                      </p>
+                      <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">
+                        {selectedServiceName}
+                      </p>
+                    </div>
+
+                    <div>
+                      <label htmlFor="takeDownLocLength" className="block text-sm font-semibold text-[#0B0F13] mb-2 font-sans uppercase tracking-wide">
+                        Approximate Loc Length
+                      </label>
+                      <select
+                        id="takeDownLocLength"
+                        name="takeDownLocLength"
+                        required={selectedServiceIsTakeDownDetangle}
+                        value={formData.takeDownLocLength}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 rounded-lg border border-[#14B8A6]/35 bg-white text-[#0B0F13] font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 focus:border-[#14B8A6] transition-colors"
+                      >
+                        <option value="">Select approximate length</option>
+                        {hairLengthOptions.map((length) => (
+                          <option key={length} value={length}>
+                            {hairLengthLabels[length]}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label htmlFor="takeDownDensity" className="block text-sm font-semibold text-[#0B0F13] mb-2 font-sans uppercase tracking-wide">
+                        Approximate Density / Fullness
+                      </label>
+                      <input
+                        type="text"
+                        id="takeDownDensity"
+                        name="takeDownDensity"
+                        required={selectedServiceIsTakeDownDetangle}
+                        value={formData.takeDownDensity}
+                        onChange={handleChange}
+                        placeholder="e.g. medium-full density"
+                        className="w-full px-4 py-3 rounded-lg border border-[#14B8A6]/35 bg-white text-[#0B0F13] placeholder-[#7A4B27]/60 font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 focus:border-[#14B8A6] transition-colors"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="takeDownInstalled" className="block text-sm font-semibold text-[#0B0F13] mb-2 font-sans uppercase tracking-wide">
+                        How Long Have the Locs Been Installed?
+                      </label>
+                      <input
+                        type="text"
+                        id="takeDownInstalled"
+                        name="takeDownInstalled"
+                        required={selectedServiceIsTakeDownDetangle}
+                        value={formData.takeDownInstalled}
+                        onChange={handleChange}
+                        placeholder="e.g. 3 years"
+                        className="w-full px-4 py-3 rounded-lg border border-[#14B8A6]/35 bg-white text-[#0B0F13] placeholder-[#7A4B27]/60 font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 focus:border-[#14B8A6] transition-colors"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="takeDownNotes" className="block text-sm font-semibold text-[#0B0F13] mb-2 font-sans uppercase tracking-wide">
+                        Condition or Buildup Notes
+                      </label>
+                      <textarea
+                        id="takeDownNotes"
+                        name="takeDownNotes"
+                        rows={4}
+                        required={selectedServiceIsTakeDownDetangle}
+                        value={formData.takeDownNotes}
+                        onChange={handleChange}
+                        placeholder="Share buildup, tangling, matting, thinning, or other concerns."
+                        className="w-full px-4 py-3 rounded-lg border border-[#14B8A6]/35 bg-white text-[#0B0F13] placeholder-[#7A4B27]/60 font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 focus:border-[#14B8A6] transition-colors resize-none"
+                      />
+                    </div>
+
+                    <p className="text-sm leading-relaxed text-[#4B5563]">
+                      Please include clear photos below so Nya can review the length, density, buildup, and overall condition before confirming timing.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {selectedServiceRequiresLength && (
                 <div>
@@ -895,67 +1118,162 @@ export default function Home() {
                     Booking Summary
                   </p>
 
-                  <div className="mt-4 space-y-3">
-                    <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Service</p>
-                      <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">{selectedServiceName}</p>
-                    </div>
-
-                    <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Category</p>
-                      <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">{selectedServiceCategory}</p>
-                    </div>
-
-                    {selectedServiceRequiresLength && selectedHairLengthLabel && (
+                  {selectedServiceIsTakeDownDetangle ? (
+                    <div className="mt-4 space-y-3">
                       <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Estimated Hair / Loc Length</p>
-                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">{selectedHairLengthLabel}</p>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Service</p>
+                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">Loc Take Down &amp; Detangle</p>
                       </div>
-                    )}
 
-                    {selectedStartingPrice && (
                       <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Starting Service Price</p>
-                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">{selectedStartingPrice}</p>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Category</p>
+                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">Hair Wellness</p>
                       </div>
-                    )}
 
-                    {selectedAddOnLabels.length > 0 && (
                       <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Selected Add-Ons</p>
-                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">{selectedAddOnLabels.join(', ')}</p>
-                      </div>
-                    )}
-
-                    {isVipService && (
-                      <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">VIP Selection</p>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Approximate Loc Length</p>
                         <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">
-                          {selectedServiceName}
-                          {selectedStartingPrice ? ` (${selectedStartingPrice})` : ''}
+                          {selectedTakeDownLocLengthLabel || 'Not selected'}
                         </p>
                       </div>
-                    )}
 
-                    <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Due Today</p>
-                      <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">$25 Booking Deposit</p>
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Approximate Density / Fullness</p>
+                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">
+                          {selectedTakeDownSummary.density || 'Not selected'}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">How Long Installed</p>
+                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">
+                          {selectedTakeDownSummary.installed || 'Not selected'}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Condition or Buildup Notes</p>
+                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">
+                          {selectedTakeDownSummary.notes || 'Not selected'}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Starting Service Price</p>
+                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">Starting at $200+</p>
+                      </div>
+
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Due Today</p>
+                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">$25 Booking Deposit</p>
+                      </div>
                     </div>
-                  </div>
+                  ) : selectedServiceIsRestoration ? (
+                    <div className="mt-4 space-y-3">
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Service</p>
+                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">Loc Restoration &amp; Repair</p>
+                      </div>
+
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Restoration Type</p>
+                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">{selectedServiceName}</p>
+                      </div>
+
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Estimated Number of Locs</p>
+                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">
+                          {selectedRestorationLocCount || 'Not selected'}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Approximate Loc Length</p>
+                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">
+                          {selectedRestorationLengthLabel || 'Not selected'}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Pricing</p>
+                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">Starting at $15 per loc</p>
+                      </div>
+
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Minimum Appointment Total</p>
+                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">$25</p>
+                      </div>
+
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Due Today</p>
+                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">$25 Booking Deposit</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-4 space-y-3">
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Service</p>
+                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">{selectedServiceName}</p>
+                      </div>
+
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Category</p>
+                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">{selectedServiceCategory}</p>
+                      </div>
+
+                      {selectedServiceRequiresLength && selectedHairLengthLabel && (
+                        <div>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Estimated Hair / Loc Length</p>
+                          <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">{selectedHairLengthLabel}</p>
+                        </div>
+                      )}
+
+                      {selectedStartingPrice && (
+                        <div>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Starting Service Price</p>
+                          <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">{selectedStartingPrice}</p>
+                        </div>
+                      )}
+
+                      {selectedAddOnLabels.length > 0 && (
+                        <div>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Selected Add-Ons</p>
+                          <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">{selectedAddOnLabels.join(', ')}</p>
+                        </div>
+                      )}
+
+                      {isVipService && (
+                        <div>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">VIP Selection</p>
+                          <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">
+                            {selectedServiceName}
+                            {selectedStartingPrice ? ` (${selectedStartingPrice})` : ''}
+                          </p>
+                        </div>
+                      )}
+
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Due Today</p>
+                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">$25 Booking Deposit</p>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="mt-4 border-t border-[#14B8A6]/20 pt-3">
                     <p className="text-sm leading-relaxed text-[#4B5563]">
-                      Your $25 booking deposit reserves your selected appointment request and is applied toward your final service total. Final pricing may vary based on length, density, loc count, condition, buildup, repairs, styling, add-ons, travel, and service time.
+                      {selectedServiceIsRestoration
+                        ? 'Your $25 booking deposit is applied toward your final service total. Loc Restoration appointments have a $25 minimum total. Final pricing is based on the number of locs, length, condition, repair method, and time required.'
+                        : 'Your $25 booking deposit reserves your selected appointment request and is applied toward your final service total. Final pricing may vary based on length, density, loc count, condition, buildup, repairs, styling, add-ons, travel, and service time.'}
                     </p>
                   </div>
                 </div>
               )}
 
               {/* New Client File Upload */}
-              {isNewClient && (
+              {(isNewClient || selectedServiceIsRestoration || selectedServiceIsTakeDownDetangle) && (
                 <div>
                   <label htmlFor="hairFiles" className="block text-sm font-semibold text-[#0B0F13] mb-2 font-sans uppercase tracking-wide">
-                    Upload photos/videos <span className="text-xs font-normal normal-case text-[#7A4B27]">(Multiple files allowed • Required for new clients)</span>
+                    Upload photos/videos <span className="text-xs font-normal normal-case text-[#7A4B27]">(Multiple files allowed • Required for {selectedServiceIsRestoration ? 'restoration bookings' : selectedServiceIsTakeDownDetangle ? 'detangle bookings' : 'new clients'})</span>
                   </label>
                   <input
                     type="file"

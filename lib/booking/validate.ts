@@ -12,7 +12,11 @@ import {
   MAX_NAME_LENGTH,
   MAX_NOTES_LENGTH,
   MAX_PHONE_LENGTH,
+  MAX_RESTORATION_LOC_COUNT,
   MAX_TOTAL_FILE_BYTES,
+  RESTORATION_MINIMUM_APPOINTMENT_TOTAL,
+  RESTORATION_STARTING_PRICE_PER_LOC,
+  RESTORATION_SERVICE_IDS,
   serviceCategories,
 } from './constants';
 import type { ValidatedBooking } from './types';
@@ -89,6 +93,13 @@ export async function validateBookingFormData(
   const service = String(formData.get('service') ?? '').trim();
   const serviceCategory = String(formData.get('serviceCategory') ?? '').trim();
   const hairLength = String(formData.get('hairLength') ?? '').trim();
+  const takeDownLocLength = String(formData.get('takeDownLocLength') ?? '').trim();
+  const takeDownDensity = String(formData.get('takeDownDensity') ?? '').trim();
+  const takeDownInstalled = String(formData.get('takeDownInstalled') ?? '').trim();
+  const takeDownNotes = String(formData.get('takeDownNotes') ?? '').trim();
+  const restorationLocCountRaw = String(formData.get('restorationLocCount') ?? '').trim();
+  const restorationLength = String(formData.get('restorationLength') ?? '').trim();
+  const restorationDescription = String(formData.get('restorationDescription') ?? '').trim();
   const startingPriceTier = String(formData.get('startingPriceTier') ?? '').trim();
   const depositAmountRaw = String(formData.get('depositAmount') ?? '').trim();
   const date = String(formData.get('date') ?? '').trim();
@@ -134,8 +145,17 @@ export async function validateBookingFormData(
   }
 
   const serviceUsesLengthPricing = LENGTH_PRICED_SERVICE_IDS.has(service);
+  const serviceIsRestoration = RESTORATION_SERVICE_IDS.has(service);
+  const serviceIsTakeDownDetangle = service === 'loc-take-down-detangle';
   let validatedHairLength = '';
+  let validatedTakeDownLocLength = '';
+  let validatedTakeDownDensity = '';
+  let validatedTakeDownInstalled = '';
+  let validatedTakeDownNotes = '';
   let validatedStartingPriceTier = '';
+  let validatedRestorationLocCount: number | null = null;
+  let validatedRestorationLength = '';
+  let validatedRestorationDescription = '';
 
   if (serviceUsesLengthPricing) {
     if (!hairLength || !ALLOWED_HAIR_LENGTHS.has(hairLength)) {
@@ -152,14 +172,68 @@ export async function validateBookingFormData(
     if (startingPriceTier && startingPriceTier !== validatedStartingPriceTier) {
       return { ok: false, message: 'Starting price tier mismatch.' };
     }
+  } else if (serviceIsTakeDownDetangle) {
+    if (!takeDownLocLength || !ALLOWED_HAIR_LENGTHS.has(takeDownLocLength)) {
+      return { ok: false, message: 'Please select an approximate loc length.' };
+    }
+
+    if (!takeDownDensity) {
+      return { ok: false, message: 'Please share the approximate density/fullness.' };
+    }
+
+    if (!takeDownInstalled) {
+      return { ok: false, message: 'Please share how long the locs have been installed.' };
+    }
+
+    if (!takeDownNotes) {
+      return { ok: false, message: 'Please add condition or buildup notes.' };
+    }
+
+    validatedTakeDownLocLength = takeDownLocLength;
+    validatedTakeDownDensity = takeDownDensity;
+    validatedTakeDownInstalled = takeDownInstalled;
+    validatedTakeDownNotes = takeDownNotes;
+    validatedStartingPriceTier = fixedServiceStartingPrices[service] ?? '';
+
+    if (!validatedStartingPriceTier) {
+      return { ok: false, message: 'Invalid starting price tier.' };
+    }
+
+    if (startingPriceTier && startingPriceTier !== validatedStartingPriceTier) {
+      return { ok: false, message: 'Starting price tier mismatch.' };
+    }
   } else {
     if (hairLength) {
       return { ok: false, message: 'Hair/loc length is not required for this service.' };
     }
 
-    validatedStartingPriceTier = fixedServiceStartingPrices[service] ?? '';
-    if (startingPriceTier && startingPriceTier !== validatedStartingPriceTier) {
-      return { ok: false, message: 'Starting price tier mismatch.' };
+    if (serviceIsRestoration) {
+      const restorationLocCount = Number(restorationLocCountRaw);
+      if (!Number.isInteger(restorationLocCount) || restorationLocCount < 1 || restorationLocCount > MAX_RESTORATION_LOC_COUNT) {
+        return { ok: false, message: 'Please enter a valid estimated number of locs.' };
+      }
+
+      if (!restorationLength || !ALLOWED_HAIR_LENGTHS.has(restorationLength)) {
+        return { ok: false, message: 'Please select an approximate loc length.' };
+      }
+
+      if (!restorationDescription) {
+        return { ok: false, message: 'Please describe the repair needed.' };
+      }
+
+      validatedRestorationLocCount = restorationLocCount;
+      validatedRestorationLength = restorationLength;
+      validatedRestorationDescription = restorationDescription;
+      validatedStartingPriceTier = RESTORATION_STARTING_PRICE_PER_LOC;
+
+      if (startingPriceTier && startingPriceTier !== validatedStartingPriceTier) {
+        return { ok: false, message: 'Starting price tier mismatch.' };
+      }
+    } else {
+      validatedStartingPriceTier = fixedServiceStartingPrices[service] ?? '';
+      if (startingPriceTier && startingPriceTier !== validatedStartingPriceTier) {
+        return { ok: false, message: 'Starting price tier mismatch.' };
+      }
     }
   }
 
@@ -168,6 +242,7 @@ export async function validateBookingFormData(
     return { ok: false, message: 'Invalid booking deposit amount.' };
   }
 
+  const validatedMinimumAppointmentTotal = RESTORATION_MINIMUM_APPOINTMENT_TOTAL;
   if (!isValidDate(date)) {
     return { ok: false, message: 'Invalid preferred date.' };
   }
@@ -189,11 +264,12 @@ export async function validateBookingFormData(
     return { ok: false, message: 'Invalid add-ons selection.' };
   }
 
-  if (clientType === 'new' && files.length === 0) {
+  if ((clientType === 'new' || serviceIsRestoration) && files.length === 0) {
     return {
       ok: false,
-      message:
-        'New clients must upload photos/video of their hair so Nya can see your hair texture and condition.',
+      message: serviceIsRestoration
+        ? 'Please upload photos of the locs that need repair so Nya can review the condition and determine the work needed.'
+        : 'New clients must upload photos/video of their hair so Nya can see your hair texture and condition.',
     };
   }
 
@@ -211,8 +287,18 @@ export async function validateBookingFormData(
       service,
       serviceCategory: expectedServiceCategory,
       hairLength: validatedHairLength,
+      takeDownLocLength: validatedTakeDownLocLength,
+      takeDownDensity: validatedTakeDownDensity,
+      takeDownInstalled: validatedTakeDownInstalled,
+      takeDownNotes: validatedTakeDownNotes,
+      restorationLocCount: validatedRestorationLocCount,
+      restorationLength: validatedRestorationLength,
+      restorationDescription: validatedRestorationDescription,
       startingPriceTier: validatedStartingPriceTier,
       depositAmount: validatedDepositAmount,
+      minimumAppointmentTotal: serviceIsRestoration
+        ? validatedMinimumAppointmentTotal
+        : validatedDepositAmount,
       date,
       timeWindow,
       name,

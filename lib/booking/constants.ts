@@ -49,14 +49,20 @@ export const LENGTH_PRICED_SERVICE_IDS = new Set([
   'interlocking-maintenance',
   'detox-retwist',
   'retwist-membership',
+]);
+
+export const RESTORATION_SERVICE_IDS = new Set([
   'loc-repair',
   'broken-loc-repair',
   'reattachment',
   'root-reattachment',
   'wick-repair',
   'loc-reconstruction',
-  'loc-take-down-detangle',
 ]);
+
+export const RESTORATION_STARTING_PRICE_PER_LOC = '$15 per loc';
+export const RESTORATION_MINIMUM_APPOINTMENT_TOTAL = 25;
+export const MAX_RESTORATION_LOC_COUNT = 99;
 
 export const hairLengthLabels: Record<string, string> = {
   short: 'Short',
@@ -81,13 +87,13 @@ export const serviceCategories: Record<string, string> = {
   'interlocking-maintenance': 'Signature Maintenance',
   'detox-retwist': 'Signature Maintenance',
   'retwist-membership': 'Signature Maintenance',
-  'loc-repair': 'Loc Restoration',
-  'broken-loc-repair': 'Loc Restoration',
-  'reattachment': 'Loc Restoration',
-  'root-reattachment': 'Loc Restoration',
-  'wick-repair': 'Loc Restoration',
-  'loc-reconstruction': 'Loc Restoration',
-  'loc-take-down-detangle': 'Loc Restoration',
+  'loc-repair': 'Loc Restoration & Repair',
+  'broken-loc-repair': 'Loc Restoration & Repair',
+  'reattachment': 'Loc Restoration & Repair',
+  'root-reattachment': 'Loc Restoration & Repair',
+  'wick-repair': 'Loc Restoration & Repair',
+  'loc-reconstruction': 'Loc Restoration & Repair',
+  'loc-take-down-detangle': 'Hair Wellness',
   'deep-cleansing-detox': 'Hair Wellness',
   'scalp-detox': 'Hair Wellness',
   'deep-conditioning': 'Hair Wellness',
@@ -107,6 +113,7 @@ export const serviceCategories: Record<string, string> = {
 
 export const fixedServiceStartingPrices: Record<string, string> = {
   'deep-cleansing-detox': '$35',
+  'loc-take-down-detangle': 'Starting at $200+',
   'protein-treatment': '$30',
   'moisture-treatment': '$25',
   'precision-trim': '$25',
