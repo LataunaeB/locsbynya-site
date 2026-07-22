@@ -1,6 +1,10 @@
 export type ValidatedBooking = {
   clientType: string;
   service: string;
+  serviceCategory: string;
+  hairLength: string;
+  startingPriceTier: string;
+  depositAmount: number;
   date: string;
   timeWindow: string;
   name: string;
@@ -24,6 +28,10 @@ export type BookingDraft = {
   completedAt?: string;
   clientType: string;
   service: string;
+  serviceCategory: string;
+  hairLength: string;
+  startingPriceTier: string;
+  depositAmount: number;
   date: string;
   timeWindow: string;
   name: string;
@@ -45,6 +53,10 @@ export type PendingBookingDraft = {
   createdAt: string;
   clientType: string;
   service: string;
+  serviceCategory?: string;
+  hairLength?: string;
+  startingPriceTier?: string;
+  depositAmount?: number;
   date: string;
   timeWindow: string;
   name: string;

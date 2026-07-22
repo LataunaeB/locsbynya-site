@@ -29,12 +29,92 @@ export const ALLOWED_SERVICES = new Set([
   'protein-treatment',
   'hot-oil-treatment',
   'precision-trim',
+  'moisture-treatment',
+  'same-day-appointment',
+  'holiday-appointment',
   'house-call',
   'emergency-appointment',
   'bridal-loc-package',
   'birthday-package',
   'photoshoot-ready-package',
 ]);
+
+export const ALLOWED_HAIR_LENGTHS = new Set(['short', 'medium', 'long', 'xl']);
+
+export const LENGTH_PRICED_SERVICE_IDS = new Set([
+  'starter-locs',
+  'instant-locs',
+  'signature-retwist',
+  'retwist-style',
+  'interlocking-maintenance',
+  'detox-retwist',
+  'retwist-membership',
+  'loc-repair',
+  'broken-loc-repair',
+  'reattachment',
+  'root-reattachment',
+  'wick-repair',
+  'loc-reconstruction',
+  'loc-take-down-detangle',
+]);
+
+export const hairLengthLabels: Record<string, string> = {
+  short: 'Short',
+  medium: 'Medium',
+  long: 'Long',
+  xl: 'XL',
+};
+
+export const hairLengthStartingPrices: Record<string, string> = {
+  short: '$175+',
+  medium: '$225+',
+  long: '$300+',
+  xl: '$400+',
+};
+
+export const serviceCategories: Record<string, string> = {
+  'starter-locs': 'Start Your Loc Journey',
+  'instant-locs': 'Start Your Loc Journey',
+  'traditional-loc-consultation': 'Start Your Loc Journey',
+  'signature-retwist': 'Signature Maintenance',
+  'retwist-style': 'Signature Maintenance',
+  'interlocking-maintenance': 'Signature Maintenance',
+  'detox-retwist': 'Signature Maintenance',
+  'retwist-membership': 'Signature Maintenance',
+  'loc-repair': 'Loc Restoration',
+  'broken-loc-repair': 'Loc Restoration',
+  'reattachment': 'Loc Restoration',
+  'root-reattachment': 'Loc Restoration',
+  'wick-repair': 'Loc Restoration',
+  'loc-reconstruction': 'Loc Restoration',
+  'loc-take-down-detangle': 'Loc Restoration',
+  'deep-cleansing-detox': 'Hair Wellness',
+  'scalp-detox': 'Hair Wellness',
+  'deep-conditioning': 'Hair Wellness',
+  'hydration-treatment': 'Hair Wellness',
+  'hot-oil-treatment': 'Hair Wellness',
+  'protein-treatment': 'Hair Wellness',
+  'moisture-treatment': 'Hair Wellness',
+  'precision-trim': 'Hair Wellness',
+  'same-day-appointment': 'VIP Experiences',
+  'holiday-appointment': 'VIP Experiences',
+  'house-call': 'VIP Experiences',
+  'emergency-appointment': 'VIP Experiences',
+  'bridal-loc-package': 'VIP Experiences',
+  'birthday-package': 'VIP Experiences',
+  'photoshoot-ready-package': 'VIP Experiences',
+};
+
+export const fixedServiceStartingPrices: Record<string, string> = {
+  'deep-cleansing-detox': '$35',
+  'protein-treatment': '$30',
+  'moisture-treatment': '$25',
+  'precision-trim': '$25',
+  'same-day-appointment': '$40',
+  'holiday-appointment': '$75',
+  'house-call': 'Starting at $100 travel fee',
+  'emergency-appointment': 'Starting at $50',
+};
 
 export const ALLOWED_TIME_WINDOWS = new Set([
   'thursday-5pm-10pm',
@@ -48,10 +128,10 @@ export const ALLOWED_ADD_ONS = new Set([
   'loc-oil-treatment',
   'scalp-treatment',
   'loc-repair',
+  'loc-jewelry-installation',
+  'color-consultation',
   'style-add-ons',
   'loc-color',
-  'house-call',
-  'late-night-early-morning',
 ]);
 
 export const ALLOWED_FILE_TYPES = new Set([
@@ -87,9 +167,12 @@ export const serviceNames: Record<string, string> = {
   'deep-cleansing-detox': 'Deep Cleansing Detox',
   'deep-conditioning': 'Deep Conditioning',
   'hydration-treatment': 'Hydration Treatment',
+  'moisture-treatment': 'Moisture Treatment',
   'protein-treatment': 'Protein Treatment',
   'hot-oil-treatment': 'Hot Oil Treatment',
   'precision-trim': 'Precision Trim',
+  'same-day-appointment': 'Same-Day Appointment',
+  'holiday-appointment': 'Holiday Appointment',
   'house-call': 'House Call',
   'emergency-appointment': 'Emergency Appointment',
   'bridal-loc-package': 'Bridal Loc Package',
@@ -102,7 +185,9 @@ export const addOnNames: Record<string, string> = {
   'loc-oil-treatment': 'Loc Oil Treatment (+$25)',
   'scalp-treatment': 'Scalp Treatment (+$30)',
   'loc-repair': 'Loc Repair / Re-attachment (+$15 each)',
-  'style-add-ons': 'Style Add Ons',
+  'loc-jewelry-installation': 'Loc Jewelry Installation ($15+)',
+  'color-consultation': 'Color Consultation ($30)',
+  'style-add-ons': 'Style Add-Ons (priced by style)',
   'loc-color': 'Loc Color Enhancement (starting at $40+)',
   'house-call': 'House Call (+$60+)',
   'late-night-early-morning': 'Late Night / Early Morning Slot (by request only)',

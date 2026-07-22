@@ -2,13 +2,18 @@ import {
   ALLOWED_ADD_ONS,
   ALLOWED_CLIENT_TYPES,
   ALLOWED_FILE_TYPES,
+  ALLOWED_HAIR_LENGTHS,
   ALLOWED_SERVICES,
   ALLOWED_TIME_WINDOWS,
+  fixedServiceStartingPrices,
+  hairLengthStartingPrices,
+  LENGTH_PRICED_SERVICE_IDS,
   MAX_FILES,
   MAX_NAME_LENGTH,
   MAX_NOTES_LENGTH,
   MAX_PHONE_LENGTH,
   MAX_TOTAL_FILE_BYTES,
+  serviceCategories,
 } from './constants';
 import type { ValidatedBooking } from './types';
 
@@ -82,6 +87,10 @@ export async function validateBookingFormData(
 ): Promise<ValidationResult> {
   const clientType = String(formData.get('clientType') ?? '').trim();
   const service = String(formData.get('service') ?? '').trim();
+  const serviceCategory = String(formData.get('serviceCategory') ?? '').trim();
+  const hairLength = String(formData.get('hairLength') ?? '').trim();
+  const startingPriceTier = String(formData.get('startingPriceTier') ?? '').trim();
+  const depositAmountRaw = String(formData.get('depositAmount') ?? '').trim();
   const date = String(formData.get('date') ?? '').trim();
   const timeWindow = String(formData.get('timeWindow') ?? '').trim();
   const name = String(formData.get('name') ?? '').trim();
@@ -113,6 +122,50 @@ export async function validateBookingFormData(
 
   if (!ALLOWED_SERVICES.has(service)) {
     return { ok: false, message: 'Invalid service selection.' };
+  }
+
+  const expectedServiceCategory = serviceCategories[service] ?? '';
+  if (!expectedServiceCategory) {
+    return { ok: false, message: 'Invalid service category.' };
+  }
+
+  if (serviceCategory && serviceCategory !== expectedServiceCategory) {
+    return { ok: false, message: 'Service category mismatch.' };
+  }
+
+  const serviceUsesLengthPricing = LENGTH_PRICED_SERVICE_IDS.has(service);
+  let validatedHairLength = '';
+  let validatedStartingPriceTier = '';
+
+  if (serviceUsesLengthPricing) {
+    if (!hairLength || !ALLOWED_HAIR_LENGTHS.has(hairLength)) {
+      return { ok: false, message: 'Please select a valid hair/loc length.' };
+    }
+
+    validatedHairLength = hairLength;
+    validatedStartingPriceTier = hairLengthStartingPrices[hairLength] ?? '';
+
+    if (!validatedStartingPriceTier) {
+      return { ok: false, message: 'Invalid starting price tier.' };
+    }
+
+    if (startingPriceTier && startingPriceTier !== validatedStartingPriceTier) {
+      return { ok: false, message: 'Starting price tier mismatch.' };
+    }
+  } else {
+    if (hairLength) {
+      return { ok: false, message: 'Hair/loc length is not required for this service.' };
+    }
+
+    validatedStartingPriceTier = fixedServiceStartingPrices[service] ?? '';
+    if (startingPriceTier && startingPriceTier !== validatedStartingPriceTier) {
+      return { ok: false, message: 'Starting price tier mismatch.' };
+    }
+  }
+
+  const validatedDepositAmount = 25;
+  if (depositAmountRaw && Number(depositAmountRaw) !== validatedDepositAmount) {
+    return { ok: false, message: 'Invalid booking deposit amount.' };
   }
 
   if (!isValidDate(date)) {
@@ -156,6 +209,10 @@ export async function validateBookingFormData(
     booking: {
       clientType,
       service,
+      serviceCategory: expectedServiceCategory,
+      hairLength: validatedHairLength,
+      startingPriceTier: validatedStartingPriceTier,
+      depositAmount: validatedDepositAmount,
       date,
       timeWindow,
       name,

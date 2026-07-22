@@ -16,6 +16,15 @@
 import { FormEvent, useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import LocsFaqChatWidget from "@/components/LocsFaqChatWidget";
+import {
+  addOnNames,
+  fixedServiceStartingPrices,
+  hairLengthLabels,
+  hairLengthStartingPrices,
+  LENGTH_PRICED_SERVICE_IDS,
+  serviceCategories,
+  serviceNames,
+} from "@/lib/booking/constants";
 
 const galleryImages = [
   { src: "/images/teen-locs.png", alt: "Teen locs by Nya", caption: "Teen locs" },
@@ -214,10 +223,13 @@ function ServiceCard({
 }
 
 export default function Home() {
+  const hairLengthOptions = ["short", "medium", "long", "xl"] as const;
+
   const [showPromoBar, setShowPromoBar] = useState(true);
   const [formData, setFormData] = useState({
     clientType: "",
     service: "",
+    hairLength: "",
     date: "",
     timeWindow: "",
     name: "",
@@ -232,9 +244,20 @@ export default function Home() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
+    const { name, value } = e.target;
+    setFormData((current) => {
+      if (name === "service") {
+        return {
+          ...current,
+          service: value,
+          hairLength: LENGTH_PRICED_SERVICE_IDS.has(value) ? current.hairLength : "",
+        };
+      }
+
+      return {
+        ...current,
+        [name]: value,
+      };
     });
   };
 
@@ -253,6 +276,20 @@ export default function Home() {
   };
 
   const isNewClient = formData.clientType === "new";
+  const selectedServiceName = serviceNames[formData.service] ?? "";
+  const selectedServiceCategory = serviceCategories[formData.service] ?? "";
+  const selectedServiceRequiresLength = LENGTH_PRICED_SERVICE_IDS.has(formData.service);
+  const selectedHairLengthLabel = formData.hairLength
+    ? hairLengthLabels[formData.hairLength]
+    : "";
+  const selectedStartingPrice = selectedServiceRequiresLength
+    ? formData.hairLength
+      ? hairLengthStartingPrices[formData.hairLength]
+      : ""
+    : fixedServiceStartingPrices[formData.service] ?? "";
+  const selectedAddOnLabels = addOns.map((addOnId) => addOnNames[addOnId] ?? addOnId);
+  const showBookingSummary = Boolean(formData.service);
+  const isVipService = selectedServiceCategory === "VIP Experiences";
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -272,6 +309,10 @@ export default function Home() {
       const formDataToSend = new FormData();
       formDataToSend.append('clientType', formData.clientType);
       formDataToSend.append('service', formData.service);
+      formDataToSend.append('serviceCategory', selectedServiceCategory);
+      formDataToSend.append('hairLength', selectedServiceRequiresLength ? formData.hairLength : '');
+      formDataToSend.append('startingPriceTier', selectedStartingPrice);
+      formDataToSend.append('depositAmount', '25');
       formDataToSend.append('date', formData.date);
       formDataToSend.append('timeWindow', formData.timeWindow);
       formDataToSend.append('name', formData.name);
@@ -704,7 +745,7 @@ export default function Home() {
             {/* Deposit Notice */}
             <div className="mb-6 p-4 rounded-xl bg-[#050609] border border-[#8B5A3C]/30 border-l-4 border-l-[#14B8A6]">
               <p className="font-sans text-sm text-[#F9FAFB] leading-relaxed">
-                <strong className="text-[#8B5A3C]">$25 Security Deposit Required:</strong> A <span className="text-[#14B8A6] font-semibold">$25 security deposit</span> is required to hold your appointment. The deposit goes toward your total and is non-refundable for late cancellations or no-shows.
+                <strong className="text-[#8B5A3C]">$25 Booking Deposit Required:</strong> A <span className="text-[#14B8A6] font-semibold">$25 booking deposit</span> is required to reserve your appointment request and is applied toward your final service total.
               </p>
             </div>
 
@@ -750,10 +791,10 @@ export default function Home() {
                     </p>
                   </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-[#14B8A6]/25 bg-white p-5 md:p-6">
               {/* Client Type */}
                 <div>
-                <label htmlFor="clientType" className="block text-sm font-semibold text-[#F9FAFB] mb-2 font-sans uppercase tracking-wide">
+                <label htmlFor="clientType" className="block text-sm font-semibold text-[#0B0F13] mb-2 font-sans uppercase tracking-wide">
                   Client Type
                   </label>
                 <select
@@ -762,14 +803,14 @@ export default function Home() {
                     required
                   value={formData.clientType}
                     onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg border border-[#8B5A3C]/30 bg-[#050609] text-[#F9FAFB] font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/40 focus:border-[#14B8A6] transition-colors"
+                  className="w-full px-4 py-3 rounded-lg border border-[#14B8A6]/35 bg-white text-[#0B0F13] font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 focus:border-[#14B8A6] transition-colors"
                 >
                   <option value="">Select client type</option>
                   <option value="new">New client</option>
                   <option value="returning">Returning client</option>
                 </select>
                 {isNewClient && (
-                  <p className="mt-2 text-sm text-[#9CA3AF] leading-relaxed">
+                  <p className="mt-2 text-sm text-[#7A4B27] leading-relaxed">
                     New clients must upload photos/video of their hair so Nya can see your hair texture and condition.
                   </p>
                 )}
@@ -777,7 +818,7 @@ export default function Home() {
 
               {/* Primary Service */}
                 <div>
-                <label htmlFor="service" className="block text-sm font-semibold text-[#F9FAFB] mb-2 font-sans uppercase tracking-wide">
+                <label htmlFor="service" className="block text-sm font-semibold text-[#0B0F13] mb-2 font-sans uppercase tracking-wide">
                   Primary Service
                   </label>
                 <select
@@ -786,7 +827,7 @@ export default function Home() {
                     required
                   value={formData.service}
                     onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg border border-[#8B5A3C]/30 bg-[#050609] text-[#F9FAFB] font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/40 focus:border-[#14B8A6] transition-colors"
+                  className="w-full px-4 py-3 rounded-lg border border-[#14B8A6]/35 bg-white text-[#0B0F13] font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 focus:border-[#14B8A6] transition-colors"
                 >
                   <option value="">Select a service</option>
                   <optgroup label="Start Your Loc Journey">
@@ -811,29 +852,110 @@ export default function Home() {
                     <option value="loc-take-down-detangle">Loc Take Down &amp; Detangle</option>
                   </optgroup>
                   <optgroup label="Hair Wellness">
-                    <option value="scalp-detox">Scalp Detox</option>
-                    <option value="deep-cleansing-detox">Deep Cleansing Detox</option>
-                    <option value="deep-conditioning">Deep Conditioning</option>
-                    <option value="hydration-treatment">Hydration Treatment</option>
-                    <option value="protein-treatment">Protein Treatment</option>
-                    <option value="hot-oil-treatment">Hot Oil Treatment</option>
-                    <option value="precision-trim">Precision Trim</option>
+                    <option value="deep-cleansing-detox">Deep Cleansing Detox - $35</option>
+                    <option value="protein-treatment">Protein Treatment - $30</option>
+                    <option value="moisture-treatment">Moisture Treatment - $25</option>
+                    <option value="precision-trim">Precision Trim - $25</option>
                   </optgroup>
                   <optgroup label="VIP Experiences">
-                    <option value="house-call">House Call</option>
-                    <option value="emergency-appointment">Emergency Appointment</option>
-                    <option value="bridal-loc-package">Bridal Loc Package</option>
-                    <option value="birthday-package">Birthday Package</option>
-                    <option value="photoshoot-ready-package">Photoshoot Ready Package</option>
+                    <option value="same-day-appointment">Same-Day Appointment - $40</option>
+                    <option value="holiday-appointment">Holiday Appointment - $75</option>
+                    <option value="house-call">House Call - Starting at $100 travel fee</option>
+                    <option value="emergency-appointment">Emergency Appointment - Starting at $50</option>
                   </optgroup>
                 </select>
               </div>
 
+              {selectedServiceRequiresLength && (
+                <div>
+                  <label htmlFor="hairLength" className="block text-sm font-semibold text-[#0B0F13] mb-2 font-sans uppercase tracking-wide">
+                    Estimated Hair / Loc Length
+                  </label>
+                  <select
+                    id="hairLength"
+                    name="hairLength"
+                    required={selectedServiceRequiresLength}
+                    value={formData.hairLength}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-lg border border-[#14B8A6]/35 bg-white text-[#0B0F13] font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 focus:border-[#14B8A6] transition-colors"
+                  >
+                    <option value="">Select estimated length</option>
+                    {hairLengthOptions.map((length) => (
+                      <option key={length} value={length}>
+                        {hairLengthLabels[length]} - {hairLengthStartingPrices[length]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {showBookingSummary && (
+                <div className="rounded-2xl border border-[#14B8A6]/25 bg-white p-5 text-[#0B0F13]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#14B8A6]">
+                    Booking Summary
+                  </p>
+
+                  <div className="mt-4 space-y-3">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Service</p>
+                      <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">{selectedServiceName}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Category</p>
+                      <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">{selectedServiceCategory}</p>
+                    </div>
+
+                    {selectedServiceRequiresLength && selectedHairLengthLabel && (
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Estimated Hair / Loc Length</p>
+                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">{selectedHairLengthLabel}</p>
+                      </div>
+                    )}
+
+                    {selectedStartingPrice && (
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Starting Service Price</p>
+                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">{selectedStartingPrice}</p>
+                      </div>
+                    )}
+
+                    {selectedAddOnLabels.length > 0 && (
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Selected Add-Ons</p>
+                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">{selectedAddOnLabels.join(', ')}</p>
+                      </div>
+                    )}
+
+                    {isVipService && (
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">VIP Selection</p>
+                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">
+                          {selectedServiceName}
+                          {selectedStartingPrice ? ` (${selectedStartingPrice})` : ''}
+                        </p>
+                      </div>
+                    )}
+
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Due Today</p>
+                      <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">$25 Booking Deposit</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 border-t border-[#14B8A6]/20 pt-3">
+                    <p className="text-sm leading-relaxed text-[#4B5563]">
+                      Your $25 booking deposit reserves your selected appointment request and is applied toward your final service total. Final pricing may vary based on length, density, loc count, condition, buildup, repairs, styling, add-ons, travel, and service time.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* New Client File Upload */}
               {isNewClient && (
                 <div>
-                  <label htmlFor="hairFiles" className="block text-sm font-semibold text-[#F9FAFB] mb-2 font-sans uppercase tracking-wide">
-                    Upload photos/videos <span className="text-xs font-normal normal-case text-[#9CA3AF]">(Multiple files allowed • Required for new clients)</span>
+                  <label htmlFor="hairFiles" className="block text-sm font-semibold text-[#0B0F13] mb-2 font-sans uppercase tracking-wide">
+                    Upload photos/videos <span className="text-xs font-normal normal-case text-[#7A4B27]">(Multiple files allowed • Required for new clients)</span>
                   </label>
                   <input
                     type="file"
@@ -842,19 +964,19 @@ export default function Home() {
                     multiple
                     accept="image/*,video/*"
                     onChange={handleFileChange}
-                    className="w-full px-4 py-3 rounded-lg border border-[#8B5A3C]/30 bg-[#050609] text-[#F9FAFB] font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/40 focus:border-[#14B8A6] transition-colors file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#8B5A3C] file:text-white hover:file:bg-[#8B5A3C]/80"
+                    className="w-full px-4 py-3 rounded-lg border border-[#14B8A6]/35 bg-white text-[#0B0F13] font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 focus:border-[#14B8A6] transition-colors file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#0FA1B2] file:text-white hover:file:bg-[#14B8A6]"
                   />
                   {hairFiles && hairFiles.length > 0 && (
-                    <div className="mt-3 p-3 rounded-lg bg-[#050609] border border-[#8B5A3C]/30">
-                      <p className="text-sm font-semibold text-[#F9FAFB] mb-2">
+                    <div className="mt-3 p-3 rounded-lg bg-[#F8FAFC] border border-[#14B8A6]/20">
+                      <p className="text-sm font-semibold text-[#0B0F13] mb-2">
                         {hairFiles.length} file{hairFiles.length > 1 ? 's' : ''} selected:
                       </p>
                       <ul className="space-y-1">
                         {Array.from(hairFiles).map((file, index) => (
-                          <li key={index} className="text-xs text-[#9CA3AF] flex items-center gap-2">
+                          <li key={index} className="text-xs text-[#4B5563] flex items-center gap-2">
                             <span className="text-[#14B8A6]">•</span>
                             <span className="truncate">{file.name}</span>
-                            <span className="text-[#9CA3AF]/60">({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                            <span className="text-[#7A4B27]/80">({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
                           </li>
                         ))}
                       </ul>
@@ -865,19 +987,19 @@ export default function Home() {
 
               {/* Add-ons & Extras */}
               <div>
-                <label className="block text-sm font-semibold text-[#F9FAFB] mb-3 font-sans uppercase tracking-wide">
-                  Add-ons & Extras <span className="text-xs font-normal normal-case text-[#9CA3AF]">(optional)</span>
+                <label className="block text-sm font-semibold text-[#0B0F13] mb-3 font-sans uppercase tracking-wide">
+                  Add-ons & Extras <span className="text-xs font-normal normal-case text-[#7A4B27]">(optional)</span>
                 </label>
-                <div className="space-y-3 p-4 rounded-lg bg-[#050609] border border-[#8B5A3C]/30">
+                <div className="space-y-3 p-4 rounded-lg bg-[#F8FAFC] border border-[#14B8A6]/20">
                   <label className="flex items-start gap-3 cursor-pointer group">
                     <input
                       type="checkbox"
                       checked={addOns.includes('loc-detox')}
                       onChange={(e) => handleAddOnChange('loc-detox', e.target.checked)}
-                      className="mt-1 w-5 h-5 border border-[#8B5A3C]/30 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#8B5A3C] bg-[#0B0F13]"
+                      className="mt-1 w-5 h-5 border border-[#14B8A6]/35 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#0FA1B2] bg-white"
                     />
                     <div className="flex-1">
-                      <span className="font-sans text-sm text-[#F9FAFB]">Loc Detox</span>
+                      <span className="font-sans text-sm text-[#0B0F13]">Loc Detox</span>
                       <span className="font-sans text-sm text-[#14B8A6] ml-2">(+$30)</span>
                     </div>
                   </label>
@@ -886,10 +1008,10 @@ export default function Home() {
                       type="checkbox"
                       checked={addOns.includes('loc-oil-treatment')}
                       onChange={(e) => handleAddOnChange('loc-oil-treatment', e.target.checked)}
-                      className="mt-1 w-5 h-5 border border-[#8B5A3C]/30 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#8B5A3C] bg-[#0B0F13]"
+                      className="mt-1 w-5 h-5 border border-[#14B8A6]/35 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#0FA1B2] bg-white"
                     />
                     <div className="flex-1">
-                      <span className="font-sans text-sm text-[#F9FAFB]">Loc Oil Treatment</span>
+                      <span className="font-sans text-sm text-[#0B0F13]">Loc Oil Treatment</span>
                       <span className="font-sans text-sm text-[#14B8A6] ml-2">(+$25)</span>
                     </div>
                   </label>
@@ -898,10 +1020,10 @@ export default function Home() {
                       type="checkbox"
                       checked={addOns.includes('scalp-treatment')}
                       onChange={(e) => handleAddOnChange('scalp-treatment', e.target.checked)}
-                      className="mt-1 w-5 h-5 border border-[#8B5A3C]/30 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#8B5A3C] bg-[#0B0F13]"
+                      className="mt-1 w-5 h-5 border border-[#14B8A6]/35 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#0FA1B2] bg-white"
                     />
                     <div className="flex-1">
-                      <span className="font-sans text-sm text-[#F9FAFB]">Scalp Treatment</span>
+                      <span className="font-sans text-sm text-[#0B0F13]">Scalp Treatment</span>
                       <span className="font-sans text-sm text-[#14B8A6] ml-2">(+$30)</span>
                     </div>
                   </label>
@@ -910,10 +1032,10 @@ export default function Home() {
                       type="checkbox"
                       checked={addOns.includes('loc-repair')}
                       onChange={(e) => handleAddOnChange('loc-repair', e.target.checked)}
-                      className="mt-1 w-5 h-5 border border-[#8B5A3C]/30 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#8B5A3C] bg-[#0B0F13]"
+                      className="mt-1 w-5 h-5 border border-[#14B8A6]/35 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#0FA1B2] bg-white"
                     />
                     <div className="flex-1">
-                      <span className="font-sans text-sm text-[#F9FAFB]">Loc Repair / Re-attachment</span>
+                      <span className="font-sans text-sm text-[#0B0F13]">Loc Repair / Re-attachment</span>
                       <span className="font-sans text-sm text-[#14B8A6] ml-2">(+$15 each)</span>
                     </div>
                   </label>
@@ -922,11 +1044,11 @@ export default function Home() {
                       type="checkbox"
                       checked={addOns.includes('style-add-ons')}
                       onChange={(e) => handleAddOnChange('style-add-ons', e.target.checked)}
-                      className="mt-1 w-5 h-5 border border-[#8B5A3C]/30 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#8B5A3C] bg-[#0B0F13]"
+                      className="mt-1 w-5 h-5 border border-[#14B8A6]/35 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#0FA1B2] bg-white"
                     />
                     <div className="flex-1">
-                      <span className="font-sans text-sm text-[#F9FAFB]">Style Add Ons</span>
-                      <span className="font-sans text-xs text-[#9CA3AF] ml-2">(upstyles, barrel twists, two strand twists, special occasion styles)</span>
+                      <span className="font-sans text-sm text-[#0B0F13]">Style Add-Ons</span>
+                      <span className="font-sans text-xs text-[#7A4B27] ml-2">(priced by style)</span>
                     </div>
                   </label>
                   <label className="flex items-start gap-3 cursor-pointer group">
@@ -934,35 +1056,35 @@ export default function Home() {
                       type="checkbox"
                       checked={addOns.includes('loc-color')}
                       onChange={(e) => handleAddOnChange('loc-color', e.target.checked)}
-                      className="mt-1 w-5 h-5 border border-[#8B5A3C]/30 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#8B5A3C] bg-[#0B0F13]"
+                      className="mt-1 w-5 h-5 border border-[#14B8A6]/35 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#0FA1B2] bg-white"
                     />
                     <div className="flex-1">
-                      <span className="font-sans text-sm text-[#F9FAFB]">Loc Color Enhancement</span>
+                      <span className="font-sans text-sm text-[#0B0F13]">Loc Color Enhancement</span>
                       <span className="font-sans text-sm text-[#14B8A6] ml-2">(starting at $40+)</span>
                     </div>
                   </label>
                   <label className="flex items-start gap-3 cursor-pointer group">
                     <input
                       type="checkbox"
-                      checked={addOns.includes('house-call')}
-                      onChange={(e) => handleAddOnChange('house-call', e.target.checked)}
-                      className="mt-1 w-5 h-5 border border-[#8B5A3C]/30 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#8B5A3C] bg-[#0B0F13]"
+                      checked={addOns.includes('loc-jewelry-installation')}
+                      onChange={(e) => handleAddOnChange('loc-jewelry-installation', e.target.checked)}
+                      className="mt-1 w-5 h-5 border border-[#14B8A6]/35 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#0FA1B2] bg-white"
                     />
                     <div className="flex-1">
-                      <span className="font-sans text-sm text-[#F9FAFB]">House Call</span>
-                      <span className="font-sans text-sm text-[#14B8A6] ml-2">(+$60+, depending on range and accessibility)</span>
+                      <span className="font-sans text-sm text-[#0B0F13]">Loc Jewelry Installation</span>
+                      <span className="font-sans text-sm text-[#14B8A6] ml-2">($15+)</span>
                     </div>
                   </label>
                   <label className="flex items-start gap-3 cursor-pointer group">
                     <input
                       type="checkbox"
-                      checked={addOns.includes('late-night-early-morning')}
-                      onChange={(e) => handleAddOnChange('late-night-early-morning', e.target.checked)}
-                      className="mt-1 w-5 h-5 border border-[#8B5A3C]/30 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#8B5A3C] bg-[#0B0F13]"
+                      checked={addOns.includes('color-consultation')}
+                      onChange={(e) => handleAddOnChange('color-consultation', e.target.checked)}
+                      className="mt-1 w-5 h-5 border border-[#14B8A6]/35 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#0FA1B2] bg-white"
                     />
                     <div className="flex-1">
-                      <span className="font-sans text-sm text-[#F9FAFB]">Late Night / Early Morning Slot</span>
-                      <span className="font-sans text-xs text-[#14B8A6] ml-2">(by request only)</span>
+                      <span className="font-sans text-sm text-[#0B0F13]">Color Consultation</span>
+                      <span className="font-sans text-sm text-[#14B8A6] ml-2">($30)</span>
                     </div>
                   </label>
                 </div>
@@ -971,7 +1093,7 @@ export default function Home() {
               {/* Date and Time Window - Inline */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="date" className="block text-sm font-semibold text-[#F9FAFB] mb-2 font-sans uppercase tracking-wide">
+                  <label htmlFor="date" className="block text-sm font-semibold text-[#0B0F13] mb-2 font-sans uppercase tracking-wide">
                     Preferred date
                   </label>
                   <input
@@ -981,11 +1103,11 @@ export default function Home() {
                     required
                     value={formData.date}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-lg border border-[#8B5A3C]/30 bg-[#050609] text-[#F9FAFB] font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/40 focus:border-[#14B8A6] transition-colors"
+                    className="w-full px-4 py-3 rounded-lg border border-[#14B8A6]/35 bg-white text-[#0B0F13] font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 focus:border-[#14B8A6] transition-colors"
                   />
                 </div>
                 <div>
-                  <label htmlFor="time-window" className="block text-sm font-semibold text-[#F9FAFB] mb-2 font-sans uppercase tracking-wide">
+                  <label htmlFor="time-window" className="block text-sm font-semibold text-[#0B0F13] mb-2 font-sans uppercase tracking-wide">
                     Preferred day & time
                   </label>
                   <select
@@ -994,7 +1116,7 @@ export default function Home() {
                     required
                     value={formData.timeWindow}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-lg border border-[#8B5A3C]/30 bg-[#050609] text-[#F9FAFB] font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/40 focus:border-[#14B8A6] transition-colors"
+                    className="w-full px-4 py-3 rounded-lg border border-[#14B8A6]/35 bg-white text-[#0B0F13] font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 focus:border-[#14B8A6] transition-colors"
                   >
                     <option value="">Select a day & time</option>
                     <option value="thursday-5pm-10pm">Thursday (5pm-10pm)</option>
@@ -1008,7 +1130,7 @@ export default function Home() {
               {/* Name and Email - Inline */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-semibold text-[#F9FAFB] mb-2 font-sans uppercase tracking-wide">
+                  <label htmlFor="name" className="block text-sm font-semibold text-[#0B0F13] mb-2 font-sans uppercase tracking-wide">
                     Full name
                   </label>
                   <input
@@ -1019,11 +1141,11 @@ export default function Home() {
                     value={formData.name}
                     onChange={handleChange}
                     placeholder="First & last name"
-                    className="w-full px-4 py-3 rounded-lg border border-[#8B5A3C]/30 bg-[#050609] text-[#F9FAFB] placeholder-[#9CA3AF]/50 font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/40 focus:border-[#14B8A6] transition-colors"
+                    className="w-full px-4 py-3 rounded-lg border border-[#14B8A6]/35 bg-white text-[#0B0F13] placeholder-[#7A4B27]/60 font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 focus:border-[#14B8A6] transition-colors"
                   />
                 </div>
                 <div>
-                  <label htmlFor="email" className="block text-sm font-semibold text-[#F9FAFB] mb-2 font-sans uppercase tracking-wide">
+                  <label htmlFor="email" className="block text-sm font-semibold text-[#0B0F13] mb-2 font-sans uppercase tracking-wide">
                     Email address
                   </label>
                   <input
@@ -1034,14 +1156,14 @@ export default function Home() {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="your@email.com"
-                    className="w-full px-4 py-3 rounded-lg border border-[#8B5A3C]/30 bg-[#050609] text-[#F9FAFB] placeholder-[#9CA3AF]/50 font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/40 focus:border-[#14B8A6] transition-colors"
+                    className="w-full px-4 py-3 rounded-lg border border-[#14B8A6]/35 bg-white text-[#0B0F13] placeholder-[#7A4B27]/60 font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 focus:border-[#14B8A6] transition-colors"
                   />
                 </div>
                 </div>
 
               {/* Phone */}
                 <div>
-                <label htmlFor="phone" className="block text-sm font-semibold text-[#F9FAFB] mb-2 font-sans uppercase tracking-wide">
+                <label htmlFor="phone" className="block text-sm font-semibold text-[#0B0F13] mb-2 font-sans uppercase tracking-wide">
                   Mobile number
                   </label>
                   <input
@@ -1052,13 +1174,13 @@ export default function Home() {
                   value={formData.phone}
                   onChange={handleChange}
                   placeholder="(xxx) xxx-xxxx"
-                  className="w-full px-4 py-3 rounded-lg border border-[#8B5A3C]/30 bg-[#050609] text-[#F9FAFB] placeholder-[#9CA3AF]/50 font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/40 focus:border-[#14B8A6] transition-colors"
+                  className="w-full px-4 py-3 rounded-lg border border-[#14B8A6]/35 bg-white text-[#0B0F13] placeholder-[#7A4B27]/60 font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 focus:border-[#14B8A6] transition-colors"
                   />
                 </div>
 
               {/* Notes */}
                 <div>
-                <label htmlFor="notes" className="block text-sm font-semibold text-[#F9FAFB] mb-2 font-sans uppercase tracking-wide">
+                <label htmlFor="notes" className="block text-sm font-semibold text-[#0B0F13] mb-2 font-sans uppercase tracking-wide">
                   Notes
                   </label>
                   <textarea
@@ -1068,12 +1190,12 @@ export default function Home() {
                   value={formData.notes}
                     onChange={handleChange}
                   placeholder="Share any important details (age, hair length, loc condition, how many locs need repair, color ideas, etc.)."
-                  className="w-full px-4 py-3 rounded-lg border border-[#8B5A3C]/30 bg-[#050609] text-[#F9FAFB] placeholder-[#9CA3AF]/50 font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/40 focus:border-[#14B8A6] transition-colors resize-none"
+                  className="w-full px-4 py-3 rounded-lg border border-[#14B8A6]/35 bg-white text-[#0B0F13] placeholder-[#7A4B27]/60 font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 focus:border-[#14B8A6] transition-colors resize-none"
                   />
                 </div>
 
               {/* Deposit Agreement Checkbox */}
-              <div className="flex items-start gap-3 p-4 rounded-lg bg-[#050609] border border-[#8B5A3C]/30">
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-[#F8FAFC] border border-[#14B8A6]/20">
                   <input
                     type="checkbox"
                     id="depositAgreed"
@@ -1081,15 +1203,15 @@ export default function Home() {
                     required
                   checked={depositAgreed}
                   onChange={(e) => setDepositAgreed(e.target.checked)}
-                  className="mt-1 w-5 h-5 border border-[#8B5A3C]/30 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#8B5A3C] bg-[#0B0F13]"
+                  className="mt-1 w-5 h-5 border border-[#14B8A6]/35 rounded focus:ring-2 focus:ring-[#14B8A6] text-[#0FA1B2] bg-white"
                 />
-                <label htmlFor="depositAgreed" className="text-sm text-[#F9FAFB] leading-relaxed cursor-pointer">
-                  I understand and agree to the <span className="text-[#14B8A6] font-semibold">$25 security deposit</span> and booking policy.
+                <label htmlFor="depositAgreed" className="text-sm text-[#0B0F13] leading-relaxed cursor-pointer">
+                  I understand that my $25 booking deposit reserves my selected appointment request and will be applied toward my final service total.
                   </label>
                 </div>
 
               {/* Policy Acknowledgment */}
-              <p className="text-xs text-center text-[#9CA3AF] font-sans leading-relaxed -mt-2">
+              <p className="text-xs text-center text-[#7A4B27] font-sans leading-relaxed -mt-2">
                 By booking, you acknowledge the appointment expectations and cancellation policy above.
               </p>
 
@@ -1099,12 +1221,12 @@ export default function Home() {
                   disabled={!depositAgreed || isSubmitting}
                   className="w-full bg-gradient-to-r from-[#4B2B1A] to-[#8B5A3C] text-white rounded-2xl px-6 py-3 font-semibold font-sans hover:shadow-lg hover:shadow-[#8B5A3C]/30 transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#8B5A3C] focus:ring-offset-2 focus:ring-offset-[#0B0F13] disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
                 >
-                  {isSubmitting ? 'Redirecting to checkout...' : 'Continue to Checkout'}
+                  {isSubmitting ? 'Redirecting to checkout...' : 'Continue to Pay $25 Deposit'}
                 </button>
 
               {/* Fine Print */}
               <p className="text-xs text-center text-[#9CA3AF] font-sans leading-relaxed">
-                You'll receive a text or email once your appointment is confirmed.
+                Your appointment request is completed only after successful payment of the booking deposit.
                 </p>
               </form>
             </div>
