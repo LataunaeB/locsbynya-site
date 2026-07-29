@@ -48,6 +48,8 @@ type ServiceCardData = {
   useLengthPriceGrid?: boolean;
   hidePricingSection?: boolean;
   collapsedCount?: number;
+  compactVerticalPadding?: boolean;
+  fitContentHeight?: boolean;
 };
 
 const serviceCards: ServiceCardData[] = [
@@ -87,19 +89,14 @@ const serviceCards: ServiceCardData[] = [
   },
   {
     title: 'Loc Restoration & Repair',
-    description: 'Individual loc repairs, reattachments, and restoration services.',
-    services: [
-      'Loc Repair',
-      'Broken Loc Repair',
-      'Reattachment',
-      'Root Reattachment',
-      'Wick Repair',
-      'Loc Reconstruction',
-    ],
+    description: '',
+    services: ['Loc Repair / Reattachment'],
     pricingNote:
-      'Individual loc repairs, reattachments, and restoration services start at $15 per loc. A $25 minimum appointment total applies. Final pricing is based on the number of locs, length, condition, repair method, and time required. Your $25 booking deposit is applied toward your final service total.',
+      'Loc Repair / Reattachment is $10 per loc. A $25 minimum appointment applies to all Loc Restoration services. Your $25 booking deposit is applied toward your final service total. If your repair total exceeds $25, the remaining balance is due at your appointment.',
     hidePricingSection: true,
     collapsedCount: 6,
+    compactVerticalPadding: true,
+    fitContentHeight: true,
   },
   {
     title: 'Hair Wellness',
@@ -153,37 +150,44 @@ function ServiceCard({
   useLengthPriceGrid,
   hidePricingSection,
   collapsedCount,
+  compactVerticalPadding,
+  fitContentHeight,
 }: ServiceCardData) {
   const [isExpanded, setIsExpanded] = useState(false);
   const collapsedVisibleCount = collapsedCount ?? 3;
   const hasMoreServices = services.length > collapsedVisibleCount;
   const visibleServices = isExpanded ? services : services.slice(0, collapsedVisibleCount);
+  const isCompactCard = Boolean(compactVerticalPadding);
 
   return (
-    <article className="rounded-2xl border border-[#14B8A6]/30 bg-white p-4 sm:p-5 md:p-6 shadow-[0_18px_40px_rgba(11,15,19,0.08)] transition-all duration-300 md:hover:-translate-y-0.5 md:hover:border-[#14B8A6]/60 md:hover:shadow-[0_24px_50px_rgba(20,184,166,0.14)]">
+    <article
+      className={`rounded-2xl border border-[#14B8A6]/30 bg-white px-4 sm:px-5 md:px-6 ${compactVerticalPadding ? 'pt-2 pb-2 sm:pt-3 sm:pb-3 md:pt-3.5 md:pb-3' : 'py-4 sm:py-5 md:py-6'} ${fitContentHeight ? 'self-start' : ''} shadow-[0_18px_40px_rgba(11,15,19,0.08)] transition-all duration-300 md:hover:-translate-y-0.5 md:hover:border-[#14B8A6]/60 md:hover:shadow-[0_24px_50px_rgba(20,184,166,0.14)]`}
+    >
       <div className="h-1 w-20 rounded-full bg-gradient-to-r from-[#14B8A6] to-[#0FA1B2]" />
-      <div className="pt-3">
+      <div className={isCompactCard ? 'pt-2' : 'pt-3'}>
         <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#14B8A6]">Service Category</p>
         <h3 className="mt-2 font-serif text-[1.5rem] font-bold leading-tight text-[#0B0F13]">{title}</h3>
-        <p
-          className="mt-2 font-sans text-sm italic leading-[1.55] text-[#7A6256]"
-          style={{
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-          }}
-        >
-          {description}
-        </p>
+        {description && (
+          <p
+            className="mt-2 font-sans text-sm italic leading-[1.55] text-[#7A6256]"
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
+            {description}
+          </p>
+        )}
 
-        <ul className="mt-4">
+        <ul className={isCompactCard ? 'mt-2.5' : 'mt-4'}>
           {visibleServices.map((service) => {
             const [name, ...priceParts] = service.split(' - ');
             const price = priceParts.join(' - ').trim();
 
             return (
-              <li key={service} className="border-b border-[#14B8A6]/14 py-2.5 first:pt-0 last:border-b-0 last:pb-0">
+              <li key={service} className={`border-b border-[#14B8A6]/14 ${isCompactCard ? 'py-1.5' : 'py-2.5'} first:pt-0 last:border-b-0 last:pb-0`}>
                 <div className="flex items-start justify-between gap-3">
                   <span className="font-sans text-sm leading-relaxed text-[#374151]">{name}</span>
                   {price && (
@@ -196,7 +200,7 @@ function ServiceCard({
         </ul>
 
         {pricingNote && (
-          <p className="mt-4 text-xs leading-relaxed text-[#7A6256]">{pricingNote}</p>
+          <p className={`${isCompactCard ? 'mt-2.5' : 'mt-4'} text-xs leading-relaxed text-[#7A6256]`}>{pricingNote}</p>
         )}
 
         {hasMoreServices && (
@@ -233,6 +237,8 @@ function ServiceCard({
 
 export default function Home() {
   const hairLengthOptions = ["short", "medium", "long", "xl"] as const;
+  const servicesMdLeftColumn = serviceCards.filter((_, index) => index % 2 === 0);
+  const servicesMdRightColumn = serviceCards.filter((_, index) => index % 2 === 1);
 
   const [showPromoBar, setShowPromoBar] = useState(true);
   const [formData, setFormData] = useState({
@@ -311,9 +317,6 @@ export default function Home() {
     : "";
   const selectedTakeDownLocLengthLabel = formData.takeDownLocLength
     ? hairLengthLabels[formData.takeDownLocLength]
-    : "";
-  const selectedRestorationLengthLabel = formData.restorationLength
-    ? hairLengthLabels[formData.restorationLength]
     : "";
   const selectedStartingPrice = selectedServiceRequiresLength
     ? formData.hairLength
@@ -735,11 +738,31 @@ export default function Home() {
 
           {/* SERVICES CATEGORY CARDS */}
           <div className="mb-20 reveal-on-scroll">
-            <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 md:hidden">
               {serviceCards.map((card) => (
                 <ServiceCard key={card.title} {...card} />
               ))}
             </div>
+
+            <div className="hidden items-start gap-6 md:grid md:grid-cols-2 xl:hidden">
+              <div className="space-y-6">
+                {servicesMdLeftColumn.map((card) => (
+                  <ServiceCard key={card.title} {...card} />
+                ))}
+              </div>
+              <div className="space-y-6">
+                {servicesMdRightColumn.map((card) => (
+                  <ServiceCard key={card.title} {...card} />
+                ))}
+              </div>
+            </div>
+
+            <div className="hidden items-stretch gap-6 xl:grid xl:grid-cols-3">
+              {serviceCards.map((card) => (
+                <ServiceCard key={card.title} {...card} />
+              ))}
+            </div>
+
             <p className="mx-auto mt-6 max-w-5xl text-center text-xs leading-relaxed text-[#9CA3AF]">
               All listed prices are starting prices. Final pricing may vary based on length, density, loc count, condition, buildup, repairs, styling, and service time.
             </p>
@@ -900,12 +923,7 @@ export default function Home() {
                     <option value="retwist-membership">Retwist Membership</option>
                   </optgroup>
                   <optgroup label="Loc Restoration & Repair">
-                    <option value="loc-repair">Loc Repair</option>
-                    <option value="broken-loc-repair">Broken Loc Repair</option>
-                    <option value="reattachment">Reattachment</option>
-                    <option value="root-reattachment">Root Reattachment</option>
-                    <option value="wick-repair">Wick Repair</option>
-                    <option value="loc-reconstruction">Loc Reconstruction</option>
+                    <option value="loc-repair">Loc Repair / Reattachment</option>
                   </optgroup>
                   <optgroup label="Hair Wellness">
                     <option value="deep-cleansing-detox">Deep Cleansing Detox - $35</option>
@@ -927,17 +945,8 @@ export default function Home() {
                 <div className="rounded-2xl border border-[#14B8A6]/20 bg-[#F8FAFC] p-5">
                   <div className="space-y-4">
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#14B8A6]">
-                        Restoration Service Needed
-                      </p>
-                      <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">
-                        {selectedServiceName}
-                      </p>
-                    </div>
-
-                    <div>
                       <label htmlFor="restorationLocCount" className="block text-sm font-semibold text-[#0B0F13] mb-2 font-sans uppercase tracking-wide">
-                        Estimated Number of Locs
+                        Number of Locs Needing Repair
                       </label>
                       <input
                         type="number"
@@ -961,41 +970,36 @@ export default function Home() {
                       <select
                         id="restorationLength"
                         name="restorationLength"
-                        required={selectedServiceIsRestoration}
                         value={formData.restorationLength}
                         onChange={handleChange}
                         className="w-full px-4 py-3 rounded-lg border border-[#14B8A6]/35 bg-white text-[#0B0F13] font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 focus:border-[#14B8A6] transition-colors"
                       >
-                        <option value="">Select approximate length</option>
+                        <option value="">Select approximate length (optional)</option>
                         {hairLengthOptions.map((length) => (
                           <option key={length} value={length}>
                             {hairLengthLabels[length]}
                           </option>
                         ))}
                       </select>
-                      <p className="mt-2 text-xs leading-relaxed text-[#7A4B27]">
-                        Descriptive only. This does not set a full-head price tier.
-                      </p>
                     </div>
 
                     <div>
                       <label htmlFor="restorationDescription" className="block text-sm font-semibold text-[#0B0F13] mb-2 font-sans uppercase tracking-wide">
-                        Description of Repair Needed
+                        Brief Description (Optional)
                       </label>
                       <textarea
                         id="restorationDescription"
                         name="restorationDescription"
                         rows={4}
-                        required={selectedServiceIsRestoration}
                         value={formData.restorationDescription}
                         onChange={handleChange}
-                        placeholder="Briefly explain what is broken, detached, thinning, damaged, or needing restoration."
+                        placeholder="Optional notes for the stylist."
                         className="w-full px-4 py-3 rounded-lg border border-[#14B8A6]/35 bg-white text-[#0B0F13] placeholder-[#7A4B27]/60 font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 focus:border-[#14B8A6] transition-colors resize-none"
                       />
                     </div>
 
                     <p className="text-sm leading-relaxed text-[#4B5563]">
-                      Your $25 booking deposit is applied toward your final service total. Loc Restoration appointments have a $25 minimum total. Final pricing is based on the number of locs, length, condition, repair method, and time required.
+                      A $25 minimum appointment applies to all Loc Restoration services. Your $25 booking deposit is applied toward your final service total. If your repair total exceeds $25, the remaining balance is due at your appointment.
                     </p>
                   </div>
                 </div>
@@ -1172,40 +1176,23 @@ export default function Home() {
                     <div className="mt-4 space-y-3">
                       <div>
                         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Service</p>
-                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">Loc Restoration &amp; Repair</p>
+                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">Loc Repair / Reattachment</p>
                       </div>
 
                       <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Restoration Type</p>
-                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">{selectedServiceName}</p>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Price</p>
+                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">$10 per loc</p>
                       </div>
 
                       <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Estimated Number of Locs</p>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Number of Locs</p>
                         <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">
                           {selectedRestorationLocCount || 'Not selected'}
                         </p>
                       </div>
 
                       <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Approximate Loc Length</p>
-                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">
-                          {selectedRestorationLengthLabel || 'Not selected'}
-                        </p>
-                      </div>
-
-                      <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Pricing</p>
-                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">Starting at $15 per loc</p>
-                      </div>
-
-                      <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Minimum Appointment Total</p>
-                        <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">$25</p>
-                      </div>
-
-                      <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Due Today</p>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7A4B27]">Deposit Due Today</p>
                         <p className="mt-1 font-sans text-sm font-semibold text-[#0B0F13]">$25 Booking Deposit</p>
                       </div>
                     </div>
@@ -1262,7 +1249,7 @@ export default function Home() {
                   <div className="mt-4 border-t border-[#14B8A6]/20 pt-3">
                     <p className="text-sm leading-relaxed text-[#4B5563]">
                       {selectedServiceIsRestoration
-                        ? 'Your $25 booking deposit is applied toward your final service total. Loc Restoration appointments have a $25 minimum total. Final pricing is based on the number of locs, length, condition, repair method, and time required.'
+                        ? 'A $25 minimum appointment applies to all Loc Restoration services. Your $25 booking deposit is applied toward your final service total. If your repair total exceeds $25, the remaining balance is due at your appointment.'
                         : 'Your $25 booking deposit reserves your selected appointment request and is applied toward your final service total. Final pricing may vary based on length, density, loc count, condition, buildup, repairs, styling, add-ons, travel, and service time.'}
                     </p>
                   </div>
@@ -1281,6 +1268,7 @@ export default function Home() {
                     name="hairFiles"
                     multiple
                     accept="image/*,video/*"
+                    required={isNewClient || selectedServiceIsRestoration || selectedServiceIsTakeDownDetangle}
                     onChange={handleFileChange}
                     className="w-full px-4 py-3 rounded-lg border border-[#14B8A6]/35 bg-white text-[#0B0F13] font-sans focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 focus:border-[#14B8A6] transition-colors file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#0FA1B2] file:text-white hover:file:bg-[#14B8A6]"
                   />

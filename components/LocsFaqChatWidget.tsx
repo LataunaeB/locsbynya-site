@@ -71,16 +71,13 @@ const faqs: FAQ[] = [
       "reattach my dread", "reattach my dreads", "re-attach my dread", "re-attach my dreads", "can you reattach my dread", "can you reattach my dreads",
       // Replace variations
       "can you replace my loc", "can you replace my dread", "replace my loc", "replace my dread",
-      // Reconstruction variations
-      "loc reconstruction", "dread reconstruction", "reconstruction on one loc", "single loc repair", "one loc repair", "single dread repair", "one dread repair",
-      // Generic repair terms
+      // Repair and reattachment terms
       "loc repair", "locs repair", "dread repair", "dreads repair", "broken loc", "broken dread", "damaged loc", "damaged dread",
-      // Reattachment terms
       "loc reattachment", "dread reattachment", "reattach loc", "re-attach loc", "reattach dreads",
       // Can you fix it variations
       "can you fix it", "can you fix them"
     ],
-    answer: "Yes, I can usually repair or re-attach a loc that has slipped or fallen out. Reattachment or re-strengthening is $15 per loc. Because every loc is different, it's best to send a clear photo so I can see what's going on.\n\nTo get started, choose a \"Loc repair / re-attachment\" option when you book, or call/text Nya at 310-892-4874 so we can talk through your situation and give you the best recommendation."
+    answer: "Yes, I can usually repair or re-attach a loc that has slipped or fallen out. Loc Repair / Reattachment is $10 per loc. Because every loc is different, it's best to send a clear photo so I can see what's going on.\n\nTo get started, choose the Loc Repair / Reattachment option when you book, or call/text Nya at 310-892-4874 so we can talk through your situation and give you the best recommendation."
   },
   {
     id: "new-client",

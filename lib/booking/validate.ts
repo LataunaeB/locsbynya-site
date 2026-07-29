@@ -213,12 +213,8 @@ export async function validateBookingFormData(
         return { ok: false, message: 'Please enter a valid estimated number of locs.' };
       }
 
-      if (!restorationLength || !ALLOWED_HAIR_LENGTHS.has(restorationLength)) {
-        return { ok: false, message: 'Please select an approximate loc length.' };
-      }
-
-      if (!restorationDescription) {
-        return { ok: false, message: 'Please describe the repair needed.' };
+      if (restorationLength && !ALLOWED_HAIR_LENGTHS.has(restorationLength)) {
+        return { ok: false, message: 'Please select a valid approximate loc length.' };
       }
 
       validatedRestorationLocCount = restorationLocCount;
@@ -268,7 +264,7 @@ export async function validateBookingFormData(
     return {
       ok: false,
       message: serviceIsRestoration
-        ? 'Please upload photos of the locs that need repair so Nya can review the condition and determine the work needed.'
+        ? 'Please upload photos of the locs that need repair so Nya can review the condition and planning details.'
         : 'New clients must upload photos/video of their hair so Nya can see your hair texture and condition.',
     };
   }
